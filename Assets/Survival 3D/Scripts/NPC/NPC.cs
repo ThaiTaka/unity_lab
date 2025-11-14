@@ -53,6 +53,9 @@ public class NPC : MonoBehaviour, IDamagable
     [Header("Sound")] 
     public AudioSource audioSource;
     
+    // Death event for wave system
+    public System.Action onDeath;
+    
     //get components
 
     private NavMeshAgent agent;
@@ -272,6 +275,10 @@ public class NPC : MonoBehaviour, IDamagable
             
         }
         anim.SetTrigger("Die");
+        
+        // Trigger death event for wave system
+        onDeath?.Invoke();
+        
         Destroy(gameObject,this.GetComponentInChildren<Animator>().GetCurrentAnimatorStateInfo(0).length+delay);
     }
 

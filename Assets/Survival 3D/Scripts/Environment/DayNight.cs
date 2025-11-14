@@ -9,7 +9,7 @@ public class DayNight : MonoBehaviour
     [Range(0.0f,1.0f)]
     public float time ;
     public float fulldayLength;
-    public float startTime = 0.5f;
+    public float startTime = 0.5f; // 0.5 = Midday (bright), 0 = Midnight (dark)
     private float timeRate;
     public Vector3 noon;
 
@@ -38,8 +38,16 @@ public class DayNight : MonoBehaviour
     {
         timeRate = 1.0f / fulldayLength;
         
-        time = startTime;
+        // Force start time to midday for bright lighting
+        time = 0.5f; // Always start at midday
+        startTime = 0.5f; // Update startTime as well
 
+        // Override environment lighting - use flat color instead of skybox
+        RenderSettings.ambientMode = UnityEngine.Rendering.AmbientMode.Flat;
+        RenderSettings.ambientLight = Color.white;
+        RenderSettings.ambientIntensity = 1f;
+        
+        Debug.Log("DayNight initialized - Starting at midday (time = 0.5)");
     }
 
     private void Update()

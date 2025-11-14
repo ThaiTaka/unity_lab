@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -39,7 +38,7 @@ public class ResourceFruitTree : MonoBehaviour
             Inventory.instance.AddItem(itemtoGive2);
         }
         //instantiate a particle effect at the position which we hit the tree with correct orientation
-        Destroy(Instantiate(hitParticle, hitpoint, quaternion.LookRotation(hitNormal, Vector3.up)),1.0f);
+        Destroy(Instantiate(hitParticle, hitpoint, Quaternion.LookRotation(hitNormal, Vector3.up)),1.0f);
         
         if (capacityitem1 <= 0)
             Destroy(gameObject);

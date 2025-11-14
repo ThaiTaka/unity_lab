@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Security.Cryptography;
-using Unity.Mathematics;
 using UnityEngine;
 
 public class ResourceStone : MonoBehaviour
@@ -25,7 +24,7 @@ public class ResourceStone : MonoBehaviour
             Inventory.instance.AddItem(itemToGive);
         }
         //instantiate a particle effect at the position which we hit the tree with correct orientation
-        Destroy(Instantiate(hitParticle, hitpoint, quaternion.LookRotation(hitNormal, Vector3.up)),1.0f);
+        Destroy(Instantiate(hitParticle, hitpoint, Quaternion.LookRotation(hitNormal, Vector3.up)),1.0f);
         
         if (capacity <= 0)
             Destroy(gameObject);
