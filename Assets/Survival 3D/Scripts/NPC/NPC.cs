@@ -53,8 +53,9 @@ public class NPC : MonoBehaviour, IDamagable
     [Header("Sound")] 
     public AudioSource audioSource;
     
-    // Death event for wave system
-    public System.Action onDeath;
+    [Header("Events")]
+    // Death event for wave system - UnityEvent cho phép config trong Inspector
+    public UnityEngine.Events.UnityEvent onDeath;
     
     //get components
 

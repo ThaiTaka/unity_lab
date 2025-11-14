@@ -19,6 +19,11 @@ public class NavigationArrow : MonoBehaviour
     public float pulseSpeed = 2f;
     public float pulseScale = 0.2f;
     
+    [Header("Distance Display")]
+    public TMPro.TextMeshProUGUI distanceText; // Hiển thị khoảng cách đến zombie
+    public bool showDistance = true;
+    public string distanceFormat = "{0:F1}m"; // Format: "15.5m"
+    
     private Transform currentTarget;
     private Vector3 originalScale;
 
@@ -85,6 +90,13 @@ public class NavigationArrow : MonoBehaviour
         {
             float scale = 1f + Mathf.Sin(Time.time * pulseSpeed) * pulseScale;
             arrowObject.transform.localScale = originalScale * scale;
+        }
+        
+        // Update distance text
+        if (showDistance && distanceText != null)
+        {
+            float distance = Vector3.Distance(player.position, currentTarget.position);
+            distanceText.text = string.Format(distanceFormat, distance);
         }
     }
 

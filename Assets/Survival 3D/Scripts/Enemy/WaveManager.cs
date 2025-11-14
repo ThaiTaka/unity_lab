@@ -32,11 +32,25 @@ public class WaveManager : MonoBehaviour
     [Header("UI")]
     public TMPro.TextMeshProUGUI waveText; // Hiển thị "Wave X/Y"
     
+    [Header("Audio & Effects")]
+    public AudioClip waveStartSound; // Âm thanh bắt đầu wave
+    public AudioClip waveCompleteSound; // Âm thanh hoàn thành wave
+    public AudioClip allWavesCompleteSound; // Âm thanh hoàn thành tất cả
+    public GameObject waveCompleteEffect; // Particle effect khi hoàn thành wave
+    private AudioSource audioSource;
+    
     public static WaveManager instance;
 
     private void Awake()
     {
         instance = this;
+        
+        // Tạo AudioSource nếu chưa có
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
 
     private void Start()
@@ -50,6 +64,7 @@ public class WaveManager : MonoBehaviour
         if (currentWaveIndex >= waves.Length)
         {
             Debug.Log("🎉 All waves completed!");
+            PlaySound(allWavesCompleteSound);
             onAllWavesComplete?.Invoke();
             return;
         }
@@ -58,6 +73,9 @@ public class WaveManager : MonoBehaviour
         Wave currentWave = waves[currentWaveIndex];
         
         Debug.Log($"🌊 Starting {currentWave.waveName}");
+        
+        // Play wave start sound
+        PlaySound(waveStartSound);
         
         // Spawn zombie
         if (currentWave.zombiePrefab != null && currentWave.spawnPosition != null)
@@ -72,8 +90,8 @@ public class WaveManager : MonoBehaviour
             NPC zombieNPC = currentZombie.GetComponent<NPC>();
             if (zombieNPC != null)
             {
-                // Add listener for death
-                zombieNPC.onDeath += OnZombieDeath;
+                // Add listener for death - UnityEvent dùng AddListener thay vì +=
+                zombieNPC.onDeath.AddListener(OnZombieDeath);
             }
         }
         else
@@ -91,6 +109,15 @@ public class WaveManager : MonoBehaviour
         Debug.Log($"✅ Zombie defeated! Wave {currentWaveIndex + 1} complete!");
         
         waveActive = false;
+        
+        // Play wave complete sound
+        PlaySound(waveCompleteSound);
+        
+        // Spawn particle effect
+        if (waveCompleteEffect != null && currentZombie != null)
+        {
+            Instantiate(waveCompleteEffect, currentZombie.transform.position, Quaternion.identity);
+        }
         
         // Tăng số sao
         currentStars++;
@@ -144,5 +171,13 @@ public class WaveManager : MonoBehaviour
     public bool IsWaveActive()
     {
         return waveActive && currentZombie != null;
+    }
+    
+    private void PlaySound(AudioClip clip)
+    {
+        if (clip != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(clip);
+        }
     }
 }

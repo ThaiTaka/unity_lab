@@ -370,6 +370,26 @@ public class Inventory : MonoBehaviour
         //we dont have enough items
         return false;
     }
+    
+    // Phương thức kiểm tra có item không (cho QuickItemHotbar)
+    public bool HasItem(ItemDatabase item, int quantity = 1)
+    {
+        return HasItems(item, quantity);
+    }
+    
+    // Đếm số lượng item trong inventory (cho QuickItemHotbar)
+    public int GetItemCount(ItemDatabase item)
+    {
+        int total = 0;
+        for (int i = 0; i < slots.Length; i++)
+        {
+            if (slots[i].item == item)
+            {
+                total += slots[i].quantity;
+            }
+        }
+        return total;
+    }
 
 }
 
