@@ -7,7 +7,12 @@ using UnityEngine.InputSystem;
 
 public class PlayerController : MonoBehaviour
 {
-    [Header("Movement")] public float moveSpeed;
+    [Header("Movement")] 
+    public float moveSpeed;
+    public float sprintSpeed; // Tốc độ khi chạy nhanh (sprint)
+    private float currentSpeed; // Tốc độ hiện tại
+    private bool isSprinting = false; // Đang sprint hay không
+    
     private Vector2 currentMovementInput;
     public float jumpForce;
     public LayerMask groundLayerMask;
@@ -26,6 +31,15 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         Cursor.lockState = CursorLockMode.Locked;
+        
+        // Khởi tạo tốc độ
+        currentSpeed = moveSpeed;
+        
+        // Set sprint speed mặc định nếu chưa set trong Inspector
+        if (sprintSpeed == 0)
+        {
+            sprintSpeed = moveSpeed * 1.5f; // Sprint nhanh hơn 1.5 lần
+        }
     }
     // Start is called before the first frame update
 
@@ -60,7 +74,7 @@ public class PlayerController : MonoBehaviour
     private void Move()
     {
         Vector3 dir = transform.forward * currentMovementInput.y + transform.right * currentMovementInput.x;
-        dir *= moveSpeed;
+        dir *= currentSpeed; // Dùng currentSpeed thay vì moveSpeed
         dir.y = rig.linearVelocity.y;
 
         rig.linearVelocity = dir;
@@ -111,6 +125,25 @@ public class PlayerController : MonoBehaviour
                 rig.AddForce(Vector3.up*jumpForce, ForceMode.Impulse);
                 
             }
+        }
+    }
+    
+    // Hàm xử lý Sprint (Shift)
+    public void OnSprintInput(InputAction.CallbackContext context)
+    {
+        if (context.phase == InputActionPhase.Performed)
+        {
+            // Bắt đầu sprint
+            isSprinting = true;
+            currentSpeed = sprintSpeed;
+            Debug.Log("🏃 Sprint ON - Speed: " + currentSpeed);
+        }
+        else if (context.phase == InputActionPhase.Canceled)
+        {
+            // Dừng sprint
+            isSprinting = false;
+            currentSpeed = moveSpeed;
+            Debug.Log("🚶 Sprint OFF - Speed: " + currentSpeed);
         }
     }
 
