@@ -65,6 +65,15 @@ public class StarCollectionSystem : MonoBehaviour
             victoryPanel.SetActive(false);
         }
         
+        // Setup font và alignment cho text
+        if (starCountText != null)
+        {
+            starCountText.fontSize = 40;
+            starCountText.fontStyle = TMPro.FontStyles.Bold;
+            starCountText.alignment = TMPro.TextAlignmentOptions.Center;
+            starCountText.color = Color.white;
+        }
+        
         Debug.Log($"⭐ StarCollectionSystem initialized - Need {maxStars} stars to win!");
     }
     
@@ -184,8 +193,22 @@ public class StarCollectionSystem : MonoBehaviour
     {
         if (starCountText != null)
         {
-            // Display: "★ 3/6" với màu sắc (dùng ★ thay vì emoji ⭐)
-            starCountText.text = $"<color=yellow>★</color> <color=white>{currentStars}</color>/<color=grey>{maxStars}</color>";
+            // Format đẹp với icon và spacing
+            // Dùng các cách hiển thị khác nhau tùy font
+            string starIcon = "★"; // Unicode star character
+            
+            // Thử các format khác nhau:
+            // Option 1: Icon + số (đơn giản nhất)
+            starCountText.text = $"{starIcon} {currentStars} / {maxStars}";
+            
+            // Option 2: Nếu không hiện sao, dùng text
+            // starCountText.text = $"STARS  {currentStars} / {maxStars}";
+            
+            // Option 3: Với color tags (nếu muốn)
+            // starCountText.text = $"<size=48>{starIcon}</size>  {currentStars} / {maxStars}";
+            
+            // Set màu trắng cho toàn bộ text
+            starCountText.color = Color.white;
         }
     }
     
