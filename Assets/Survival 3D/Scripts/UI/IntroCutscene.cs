@@ -230,16 +230,16 @@ public class IntroCutscene : MonoBehaviour
                 if (textBackground != null && !textBackground.gameObject.activeSelf)
                 {
                     textBackground.gameObject.SetActive(true);
-                    // Nền đen semi-transparent (alpha 0.7 = 70% đen)
-                    textBackground.color = new Color(0, 0, 0, 0.7f);
+                    // Nền trắng semi-transparent để text đen nổi bật
+                    textBackground.color = new Color(1, 1, 1, 0.9f); // Nền trắng 90%
                 }
                 
-                // Đổi màu text thành trắng để nổi bật trên nền đen
-                dialogueText.color = Color.white; // Đổi từ đen sang TRẮNG
+                // Đổi màu text thành ĐEN từ "DÀNH" trở đi
+                dialogueText.color = Color.black; // ĐEN thay vì trắng
                 dialogueText.fontStyle = FontStyles.Bold; // Bôi đậm
                 
-                // Viền đen để tách biệt với background
-                dialogueText.outlineColor = Color.black;
+                // Viền trắng để nổi bật trên background
+                dialogueText.outlineColor = Color.white;
                 dialogueText.outlineWidth = 0.5f;
                 
                 // Font size RẤT TO để dễ đọc
