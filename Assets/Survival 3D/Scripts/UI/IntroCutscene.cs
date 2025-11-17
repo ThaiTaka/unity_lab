@@ -149,6 +149,12 @@ public class IntroCutscene : MonoBehaviour
         // Hiển thị từng dòng dialogue (trừ dòng cuối)
         for (int i = 0; i < dialogues.Length - 1; i++)
         {
+            // Đảm bảo text màu trắng cho các dòng bình thường
+            if (dialogueText != null)
+            {
+                dialogueText.color = Color.white;
+            }
+            
             yield return StartCoroutine(TypeText(dialogues[i], typingSpeed));
             
             // Đợi trước khi chuyển sang dòng tiếp theo
@@ -185,6 +191,14 @@ public class IntroCutscene : MonoBehaviour
             if (isSkipping) yield break;
             
             dialogueText.text += letter;
+            
+            // Kiểm tra nếu đã gõ đến "CHO" trong câu cuối
+            if (dialogueText.text.Contains("CHO"))
+            {
+                // Đổi màu text thành đen khi ảnh Faker đã hiện
+                dialogueText.color = Color.black;
+            }
+            
             yield return new WaitForSeconds(speed);
         }
     }
@@ -255,7 +269,12 @@ public class IntroCutscene : MonoBehaviour
     
     private IEnumerator TypeTextWithFakerReveal()
     {
-        // Dòng cuối cùng
+        // Dòng cuối cùng - Bắt đầu với text màu trắng
+        if (dialogueText != null)
+        {
+            dialogueText.color = Color.white;
+        }
+        
         string lastDialogue = dialogues[dialogues.Length - 1];
         
         // Bắt đầu type text
