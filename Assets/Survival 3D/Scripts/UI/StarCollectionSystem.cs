@@ -1,6 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine;
+using UnityEngine.UI;
 using TMPro;
 
 public class StarCollectionSystem : MonoBehaviour
@@ -13,11 +15,24 @@ public class StarCollectionSystem : MonoBehaviour
     
     [Header("UI References")]
     public TextMeshProUGUI starCountText; // Text hiển thị số sao (VD: "⭐ 3/6")
+    public Transform starIconContainer; // Container chứa các star icons trên UI
+    public GameObject starIconPrefab; // Prefab của 1 star icon UI
     public GameObject victoryPanel; // Panel hiển thị khi thắng
     
     [Header("Star Visual (Optional)")]
     public GameObject starPrefab; // Prefab ngôi sao rơi từ zombie
     public float starDropHeight = 2f; // Độ cao ngôi sao xuất hiện
+    
+    [Header("Animation Settings")]
+    public float starAnimationDuration = 0.5f;
+    public AnimationCurve scaleAnimationCurve = AnimationCurve.EaseInOut(0, 0, 1, 1);
+    
+    [Header("Audio")]
+    public AudioClip starCollectSound;
+    public AudioClip victorySound;
+    private AudioSource audioSource;
+    
+    private List<GameObject> starIcons = new List<GameObject>();
     
     private void Awake()
     {
@@ -31,10 +46,18 @@ public class StarCollectionSystem : MonoBehaviour
             Destroy(gameObject);
             return;
         }
+        
+        // Get or create AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
     }
     
     private void Start()
     {
+        InitializeStarIcons();
         UpdateStarUI();
         
         if (victoryPanel != null)
@@ -45,11 +68,52 @@ public class StarCollectionSystem : MonoBehaviour
         Debug.Log($"⭐ StarCollectionSystem initialized - Need {maxStars} stars to win!");
     }
     
+    // Khởi tạo các star icons trống
+    private void InitializeStarIcons()
+    {
+        if (starIconContainer == null || starIconPrefab == null)
+        {
+            Debug.LogWarning("⚠️ Star Icon Container or Prefab not assigned!");
+            return;
+        }
+        
+        // Clear existing icons
+        foreach (Transform child in starIconContainer)
+        {
+            Destroy(child.gameObject);
+        }
+        starIcons.Clear();
+        
+        // Create star icon slots
+        for (int i = 0; i < maxStars; i++)
+        {
+            GameObject starIcon = Instantiate(starIconPrefab, starIconContainer);
+            starIcon.name = $"Star_{i + 1}";
+            
+            // Set icon to inactive/grey state initially
+            Image iconImage = starIcon.GetComponent<Image>();
+            if (iconImage != null)
+            {
+                iconImage.color = new Color(0.3f, 0.3f, 0.3f, 0.5f); // Grey out
+            }
+            
+            starIcons.Add(starIcon);
+        }
+    }
+    
     // Gọi khi zombie chết
     public void AddStar(Vector3 zombiePosition)
     {
+        if (currentStars >= maxStars) return; // Already won
+        
         currentStars++;
         Debug.Log($"⭐ Star collected! {currentStars}/{maxStars}");
+        
+        // Play sound
+        if (starCollectSound != null && audioSource != null)
+        {
+            audioSource.PlayOneShot(starCollectSound);
+        }
         
         // Spawn star visual effect (optional)
         if (starPrefab != null)
@@ -59,6 +123,13 @@ public class StarCollectionSystem : MonoBehaviour
             
             // Animate star flying to UI (optional - can implement later)
             StartCoroutine(AnimateStarToUI(star));
+        }
+        
+        // Animate star icon
+        if (starIcons.Count > 0 && currentStars <= starIcons.Count)
+        {
+            int starIndex = currentStars - 1;
+            StartCoroutine(AnimateStarIcon(starIcons[starIndex]));
         }
         
         // Update UI
@@ -71,12 +142,50 @@ public class StarCollectionSystem : MonoBehaviour
         }
     }
     
+    // Animate star icon khi được collect
+    private IEnumerator AnimateStarIcon(GameObject starIcon)
+    {
+        Image iconImage = starIcon.GetComponent<Image>();
+        if (iconImage == null) yield break;
+        
+        // Reset scale
+        starIcon.transform.localScale = Vector3.zero;
+        
+        float elapsed = 0f;
+        
+        while (elapsed < starAnimationDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / starAnimationDuration;
+            
+            // Animate scale với curve
+            float scale = scaleAnimationCurve.Evaluate(t);
+            starIcon.transform.localScale = Vector3.one * scale;
+            
+            // Change color from grey to yellow
+            iconImage.color = Color.Lerp(
+                new Color(0.3f, 0.3f, 0.3f, 0.5f), 
+                Color.yellow, 
+                t
+            );
+            
+            // Add rotation
+            starIcon.transform.Rotate(Vector3.forward, 360f * Time.deltaTime * 2f);
+            
+            yield return null;
+        }
+        
+        // Final state
+        starIcon.transform.localScale = Vector3.one;
+        iconImage.color = Color.yellow;
+    }
+    
     private void UpdateStarUI()
     {
         if (starCountText != null)
         {
-            // Display: "⭐ 3/6"
-            starCountText.text = $"⭐ {currentStars}/{maxStars}";
+            // Display: "⭐ 3/6" với màu sắc
+            starCountText.text = $"<color=yellow>⭐</color> <color=white>{currentStars}</color>/<color=grey>{maxStars}</color>";
         }
     }
     
@@ -84,11 +193,17 @@ public class StarCollectionSystem : MonoBehaviour
     {
         Debug.Log($"🎉 ALL STARS COLLECTED! Victory!");
         
-        // Show victory panel
-        if (victoryPanel != null)
+        // Play victory sound
+        if (victorySound != null && audioSource != null)
         {
-            victoryPanel.SetActive(true);
+            audioSource.PlayOneShot(victorySound);
         }
+        
+        // Animate all stars
+        StartCoroutine(VictoryStarAnimation());
+        
+        // Show victory panel after animation
+        StartCoroutine(ShowVictoryPanelDelayed(1.5f));
         
         // Stop wave spawning
         if (WaveManager.instance != null)
@@ -98,6 +213,54 @@ public class StarCollectionSystem : MonoBehaviour
         
         // Optional: Pause game or show celebration
         // Time.timeScale = 0f; // Pause game
+    }
+    
+    private IEnumerator ShowVictoryPanelDelayed(float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        if (victoryPanel != null)
+        {
+            victoryPanel.SetActive(true);
+        }
+    }
+    
+    private IEnumerator VictoryStarAnimation()
+    {
+        // Animate all stars bouncing
+        for (int i = 0; i < starIcons.Count; i++)
+        {
+            StartCoroutine(BounceStarIcon(starIcons[i], i * 0.1f));
+        }
+        yield return null;
+    }
+    
+    private IEnumerator BounceStarIcon(GameObject starIcon, float delay)
+    {
+        yield return new WaitForSeconds(delay);
+        
+        float bounceHeight = 20f;
+        float bounceDuration = 0.3f;
+        Vector3 originalPos = starIcon.transform.localPosition;
+        
+        // Bounce up
+        float elapsed = 0f;
+        while (elapsed < bounceDuration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / bounceDuration;
+            float yOffset = Mathf.Sin(t * Mathf.PI) * bounceHeight;
+            starIcon.transform.localPosition = originalPos + Vector3.up * yOffset;
+            
+            // Scale pulse
+            float scale = 1f + Mathf.Sin(t * Mathf.PI) * 0.3f;
+            starIcon.transform.localScale = Vector3.one * scale;
+            
+            yield return null;
+        }
+        
+        starIcon.transform.localPosition = originalPos;
+        starIcon.transform.localScale = Vector3.one;
     }
     
     private IEnumerator AnimateStarToUI(GameObject star)
@@ -134,6 +297,7 @@ public class StarCollectionSystem : MonoBehaviour
     public void ResetStars()
     {
         currentStars = 0;
+        InitializeStarIcons();
         UpdateStarUI();
         
         if (victoryPanel != null)
@@ -142,5 +306,17 @@ public class StarCollectionSystem : MonoBehaviour
         }
         
         Debug.Log($"⭐ Stars reset to 0");
+    }
+    
+    // Get current star count
+    public int GetCurrentStars()
+    {
+        return currentStars;
+    }
+    
+    // Check if player has won
+    public bool HasWon()
+    {
+        return currentStars >= maxStars;
     }
 }
