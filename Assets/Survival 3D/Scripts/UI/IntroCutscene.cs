@@ -3,6 +3,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem; // Thêm Input System
 
 /// <summary>
 /// Cutscene intro với dialogue trước khi bắt đầu game
@@ -30,7 +31,6 @@ public class IntroCutscene : MonoBehaviour
     public string gameSceneName = "Game"; // Tên scene game
     
     [Header("Skip")]
-    public KeyCode skipKey = KeyCode.Space;
     public bool canSkip = true;
     
     private bool isSkipping = false;
@@ -70,13 +70,31 @@ public class IntroCutscene : MonoBehaviour
     
     private void Update()
     {
-        // Skip cutscene bằng Space
-        if (canSkip && Input.GetKeyDown(skipKey) && !isSkipping)
+        // Skip cutscene bằng Space, Enter, hoặc Click chuột (dùng New Input System)
+        if (canSkip && !isSkipping)
         {
-            isSkipping = true;
-            StopAllCoroutines();
-            LoadGameScene();
+            // Check keyboard
+            if (Keyboard.current != null && 
+                (Keyboard.current.spaceKey.wasPressedThisFrame || 
+                 Keyboard.current.enterKey.wasPressedThisFrame ||
+                 Keyboard.current.escapeKey.wasPressedThisFrame))
+            {
+                SkipCutscene();
+            }
+            
+            // Check mouse click
+            if (Mouse.current != null && Mouse.current.leftButton.wasPressedThisFrame)
+            {
+                SkipCutscene();
+            }
         }
+    }
+    
+    private void SkipCutscene()
+    {
+        isSkipping = true;
+        StopAllCoroutines();
+        LoadGameScene();
     }
     
     private IEnumerator PlayCutscene()
