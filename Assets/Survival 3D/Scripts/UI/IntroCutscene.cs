@@ -238,22 +238,22 @@ public class IntroCutscene : MonoBehaviour
             dialogueText.gameObject.SetActive(false);
         }
         
-        // Kích hoạt cube nhưng trong suốt ban đầu
+        // Kích hoạt cube với alpha = 1 NGAY LẬP TỨC (đã hiện sẵn khi mở mắt)
         fakerCube.SetActive(true);
         
         // Lấy tất cả Renderer của cube và children
         Renderer[] renderers = fakerCube.GetComponentsInChildren<Renderer>();
         
-        // Set alpha ban đầu = 0 (trong suốt)
+        // Set alpha = 1 ngay (cube đã hiện rõ 100%)
         foreach (Renderer rend in renderers)
         {
             foreach (Material mat in rend.materials)
             {
                 Color color = mat.color;
-                color.a = 0f;
+                color.a = 1f; // HIỆN NGAY, KHÔNG FADE IN
                 mat.color = color;
                 
-                // Enable transparent mode nếu cần
+                // Enable transparent mode để có thể fade out sau
                 mat.SetFloat("_Surface", 1); // Transparent
                 mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
                 mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
@@ -265,42 +265,11 @@ public class IntroCutscene : MonoBehaviour
             }
         }
         
-        // FADE IN - Cube từ từ xuất hiện
-        float elapsed = 0f;
-        while (elapsed < cubeRevealDuration)
-        {
-            elapsed += Time.deltaTime;
-            float alpha = Mathf.Lerp(0f, 1f, elapsed / cubeRevealDuration);
-            
-            foreach (Renderer rend in renderers)
-            {
-                foreach (Material mat in rend.materials)
-                {
-                    Color color = mat.color;
-                    color.a = alpha;
-                    mat.color = color;
-                }
-            }
-            
-            yield return null;
-        }
-        
-        // Đảm bảo alpha = 1
-        foreach (Renderer rend in renderers)
-        {
-            foreach (Material mat in rend.materials)
-            {
-                Color color = mat.color;
-                color.a = 1f;
-                mat.color = color;
-            }
-        }
-        
-        // HIỂN THỊ CUBE trong 2 giây
+        // HIỂN THỊ CUBE trong 2 giây (đã hiện rõ 100%)
         yield return new WaitForSeconds(cubeDisplayTime);
         
         // FADE OUT - Cube từ từ biến mất
-        elapsed = 0f;
+        float elapsed = 0f;
         while (elapsed < cubeFadeOutDuration)
         {
             elapsed += Time.deltaTime;
