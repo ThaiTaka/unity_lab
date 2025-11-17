@@ -22,7 +22,7 @@ public class Meteor : MonoBehaviour
     {
         rb = GetComponent<Rigidbody>();
         rb.useGravity = false;
-        rb.velocity = Vector3.down * fallSpeed;
+        rb.linearVelocity = Vector3.down * fallSpeed;
     }
     
     private void OnCollisionEnter(Collision collision)
@@ -52,7 +52,7 @@ public class Meteor : MonoBehaviour
                 PlayerNeeds player = hit.GetComponent<PlayerNeeds>();
                 if (player != null)
                 {
-                    player.TakeDamage(damage);
+                    player.TakePhysicDamage((int)damage);
                     Debug.Log($"💥 Meteor hit player! Damage: {damage}");
                 }
             }

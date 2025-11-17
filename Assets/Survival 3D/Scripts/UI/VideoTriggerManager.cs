@@ -67,7 +67,7 @@ public class VideoTriggerManager : MonoBehaviour
     private void Update()
     {
         // Kiểm tra khi đạt 6 sao
-        if (!videoTriggered && starSystem != null && starSystem.GetStarCount() >= 6)
+        if (!videoTriggered && starSystem != null && starSystem.GetCurrentStars() >= 6)
         {
             videoTriggered = true;
             StartCoroutine(PlayVideoSequence());
