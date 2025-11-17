@@ -40,7 +40,8 @@ public class IntroCutscene : MonoBehaviour
     public int blinkCount = 4; // Số lần chớp mắt (nhiều hơn = như vừa tỉnh dậy)
     
     [Header("Scene")]
-    public string gameSceneName = "Game"; // Tên scene game
+    public string loadingSceneName = "Loading"; // Tên scene loading
+    public string gameSceneName = "Game"; // Tên scene game (không dùng nữa, chuyển qua Loading)
     
     [Header("Skip")]
     public bool canSkip = true;
@@ -116,7 +117,7 @@ public class IntroCutscene : MonoBehaviour
         RectTransform rectTransform = fakerImage.GetComponent<RectTransform>();
         if (rectTransform == null) return;
         
-        // Set anchor thành Stretch All để phủ toàn màn hình
+        // Set anchor thành Stretch All để phủ TOÀN MÀN HÌNH
         rectTransform.anchorMin = Vector2.zero;
         rectTransform.anchorMax = Vector2.one;
         rectTransform.offsetMin = Vector2.zero;
@@ -132,7 +133,7 @@ public class IntroCutscene : MonoBehaviour
         // Đặt ở layer trên BlackScreen nhưng dưới Text
         fakerImage.transform.SetSiblingIndex(1);
         
-        Debug.Log("✅ FakerImage đã được setup: Fullscreen + Preserve Aspect + Scale 120%");
+        Debug.Log("✅ FakerImage đã được setup: FULLSCREEN + Preserve Aspect + Scale 120%");
     }
     
     private void Update()
@@ -196,10 +197,10 @@ public class IntroCutscene : MonoBehaviour
         // DÒNG CUỐI CÙNG: Type text VÀ Fade in ảnh Faker ĐỒNG THỜI
         yield return StartCoroutine(TypeTextWithFakerReveal());
         
-        // Fade về đen
+        // Fade về đen NHANH và chuyển scene NGAY LẬP TỨC
         yield return StartCoroutine(FadeFakerToBlack());
         
-        // KHÔNG CÒN chớp mắt - Chuyển scene trực tiếp
+        // Chuyển scene NGAY SAU KHI fade xong (không delay)
         LoadGameScene();
     }
     
@@ -241,8 +242,8 @@ public class IntroCutscene : MonoBehaviour
                 dialogueText.outlineColor = Color.black;
                 dialogueText.outlineWidth = 0.5f;
                 
-                // Font size lớn hơn để dễ đọc
-                dialogueText.fontSize = 35;
+                // Font size RẤT TO để dễ đọc
+                dialogueText.fontSize = 50;
             }
             
             yield return new WaitForSeconds(speed);
@@ -373,14 +374,15 @@ public class IntroCutscene : MonoBehaviour
             textBackground.gameObject.SetActive(false);
         }
         
-        // Fade ảnh Faker về đen
+        // Fade ảnh Faker về đen NHANH HƠN (1 giây thay vì 2)
+        float quickFadeDuration = 1.0f;
         float elapsed = 0f;
         Color color = fakerImage.color;
         
-        while (elapsed < fakerFadeOutDuration)
+        while (elapsed < quickFadeDuration)
         {
             elapsed += Time.deltaTime;
-            color.a = Mathf.Lerp(1f, 0f, elapsed / fakerFadeOutDuration);
+            color.a = Mathf.Lerp(1f, 0f, elapsed / quickFadeDuration);
             fakerImage.color = color;
             yield return null;
         }
@@ -390,38 +392,12 @@ public class IntroCutscene : MonoBehaviour
         fakerImage.color = color;
         fakerImage.gameObject.SetActive(false);
         
-        // Hiện lại màn hình đen
-        if (blackScreen != null)
-        {
-            blackScreen.gameObject.SetActive(true);
-        }
+        // KHÔNG HIỆN màn hình đen - chuyển scene luôn
     }
     
     private void LoadGameScene()
     {
-        // Fade out trước khi load scene
-        if (canvasGroup != null)
-        {
-            StartCoroutine(FadeOutAndLoad());
-        }
-        else
-        {
-            SceneManager.LoadScene(gameSceneName);
-        }
-    }
-    
-    private IEnumerator FadeOutAndLoad()
-    {
-        float duration = 1f;
-        float elapsed = 0f;
-        
-        while (elapsed < duration)
-        {
-            elapsed += Time.deltaTime;
-            canvasGroup.alpha = Mathf.Lerp(1, 0, elapsed / duration);
-            yield return null;
-        }
-        
-        SceneManager.LoadScene(gameSceneName);
+        // Chuyển sang màn hình Loading (không fade out, chuyển trực tiếp)
+        SceneManager.LoadScene(loadingSceneName);
     }
 }
