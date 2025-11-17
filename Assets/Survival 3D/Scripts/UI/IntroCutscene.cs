@@ -47,7 +47,7 @@ public class IntroCutscene : MonoBehaviour
         "Anti Fan: Lúc nào cũng 3Ker, 3 Gà thì chửi ỏm lên",
         "Anti Fan: Giờ kêu đánh lại 6 trận lấy cúp đố lấy được đấy",
         "Feaker: Thế giờ 6 cúp sau ......",
-        "Feaker: SẼ ... DÀNH .... CHO .... Các .... EM"
+        "Feaker: SẼ ...... DÀNH ....... CHO ...... Các ...... EM"
     };
     
     private void Start()
@@ -72,6 +72,9 @@ public class IntroCutscene : MonoBehaviour
         // Ẩn ảnh Faker ban đầu
         if (fakerImage != null)
         {
+            // Setup FakerImage để phóng to toàn màn hình và không bị bể
+            SetupFakerImageFullscreen();
+            
             Color color = fakerImage.color;
             color.a = 0f; // Trong suốt
             fakerImage.color = color;
@@ -80,6 +83,33 @@ public class IntroCutscene : MonoBehaviour
         
         // Bắt đầu cutscene
         StartCoroutine(PlayCutscene());
+    }
+    
+    private void SetupFakerImageFullscreen()
+    {
+        if (fakerImage == null) return;
+        
+        // Lấy RectTransform của FakerImage
+        RectTransform rectTransform = fakerImage.GetComponent<RectTransform>();
+        if (rectTransform == null) return;
+        
+        // Set anchor thành Stretch All để phủ toàn màn hình
+        rectTransform.anchorMin = Vector2.zero;
+        rectTransform.anchorMax = Vector2.one;
+        rectTransform.offsetMin = Vector2.zero;
+        rectTransform.offsetMax = Vector2.zero;
+        rectTransform.pivot = new Vector2(0.5f, 0.5f);
+        
+        // Đặt scale lớn hơn để đảm bảo phủ kín màn hình
+        rectTransform.localScale = Vector3.one * 1.2f; // Phóng to 120%
+        
+        // Set Preserve Aspect để không bị méo
+        fakerImage.preserveAspect = true;
+        
+        // Đặt ở layer trên BlackScreen nhưng dưới Text
+        fakerImage.transform.SetSiblingIndex(1);
+        
+        Debug.Log("✅ FakerImage đã được setup: Fullscreen + Preserve Aspect + Scale 120%");
     }
     
     private void Update()
