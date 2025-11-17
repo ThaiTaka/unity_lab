@@ -27,6 +27,12 @@ public class IntroCutscene : MonoBehaviour
     public float delayBetweenLines = 1.5f; // Delay giữa các dòng
     public float slowTypingSpeed = 0.15f; // Tốc độ chậm cho "SẼ... DÀNH..."
     
+    [Header("Audio")]
+    public AudioClip typingSound; // Âm thanh gõ chữ (typing hoặc robot beep)
+    [Range(0f, 1f)]
+    public float typingSoundVolume = 0.5f; // Âm lượng
+    private AudioSource audioSource;
+    
     [Header("Eye Effect")]
     public float eyeBlinkDuration = 0.3f; // Thời gian chớp mắt
     public float eyeOpenDuration = 2.0f; // Thời gian mở mắt
@@ -52,6 +58,15 @@ public class IntroCutscene : MonoBehaviour
     
     private void Start()
     {
+        // Setup AudioSource
+        audioSource = GetComponent<AudioSource>();
+        if (audioSource == null)
+        {
+            audioSource = gameObject.AddComponent<AudioSource>();
+        }
+        audioSource.playOnAwake = false;
+        audioSource.volume = typingSoundVolume;
+        
         // Setup initial state
         if (blackScreen != null)
         {
@@ -191,6 +206,13 @@ public class IntroCutscene : MonoBehaviour
             if (isSkipping) yield break;
             
             dialogueText.text += letter;
+            
+            // Phát âm thanh gõ chữ (trừ khoảng trắng)
+            if (typingSound != null && !char.IsWhiteSpace(letter) && audioSource != null)
+            {
+                audioSource.pitch = Random.Range(0.9f, 1.1f); // Random pitch cho tự nhiên
+                audioSource.PlayOneShot(typingSound, typingSoundVolume);
+            }
             
             // Kiểm tra nếu đã gõ đến "CHO" trong câu cuối
             if (dialogueText.text.Contains("CHO"))
