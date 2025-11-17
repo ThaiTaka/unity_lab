@@ -17,6 +17,12 @@ public class IntroCutscene : MonoBehaviour
     public Image eyeOverlay; // Image cho hiệu ứng mở mắt
     public CanvasGroup canvasGroup;
     
+    [Header("Faker Cube Reveal")]
+    public GameObject fakerCube; // Cube Faker (Absolute Chyssey)
+    public float cubeRevealDuration = 1.0f; // Thời gian fade in cube
+    public float cubeDisplayTime = 2.0f; // Thời gian hiển thị cube
+    public float cubeFadeOutDuration = 0.8f; // Thời gian fade out cube
+    
     [Header("Settings")]
     public float typingSpeed = 0.05f; // Tốc độ gõ chữ
     public float delayBetweenLines = 1.5f; // Delay giữa các dòng
@@ -41,8 +47,8 @@ public class IntroCutscene : MonoBehaviour
         "Anti: Lại vô địch đấy, tê liệt cũng chỉ ăn may à ?",
         "Anti: Lúc nào cũng 3Ker, 3 Gà thì chửi ỏm lên",
         "Giờ kêu đánh lại 6 trận lấy cúp đố lấy được đấy",
-        "Faker: Thế giờ 6 cúp sau ......",
-        "Faker: SẼ ..... DÀNH ...... CHO ...... CHÚNG ....... EM"
+        "Feaker: Thế giờ 6 cúp sau ......",
+        "Feaker: SẼ ..... DÀNH ...... CHO ...... CHÚNG ....... EM"
     };
     
     private void Start()
@@ -62,6 +68,12 @@ public class IntroCutscene : MonoBehaviour
         if (eyeOverlay != null)
         {
             eyeOverlay.color = new Color(0, 0, 0, 0); // Trong suốt ban đầu
+        }
+        
+        // Ẩn cube Faker ban đầu
+        if (fakerCube != null)
+        {
+            fakerCube.SetActive(false);
         }
         
         // Bắt đầu cutscene
@@ -125,6 +137,9 @@ public class IntroCutscene : MonoBehaviour
         
         // Hiệu ứng chớp mắt và mở mắt
         yield return StartCoroutine(EyeOpenEffect());
+        
+        // HIỂN THỊ CUBE FAKER sau khi mở mắt
+        yield return StartCoroutine(ShowFakerCube());
         
         // Load game scene
         LoadGameScene();
@@ -207,6 +222,105 @@ public class IntroCutscene : MonoBehaviour
         
         color.a = endAlpha;
         eyeOverlay.color = color;
+    }
+    
+    private IEnumerator ShowFakerCube()
+    {
+        if (fakerCube == null) yield break;
+        
+        // Ẩn màn hình đen và text để chỉ thấy cube
+        if (blackScreen != null)
+        {
+            blackScreen.gameObject.SetActive(false);
+        }
+        if (dialogueText != null)
+        {
+            dialogueText.gameObject.SetActive(false);
+        }
+        
+        // Kích hoạt cube nhưng trong suốt ban đầu
+        fakerCube.SetActive(true);
+        
+        // Lấy tất cả Renderer của cube và children
+        Renderer[] renderers = fakerCube.GetComponentsInChildren<Renderer>();
+        
+        // Set alpha ban đầu = 0 (trong suốt)
+        foreach (Renderer rend in renderers)
+        {
+            foreach (Material mat in rend.materials)
+            {
+                Color color = mat.color;
+                color.a = 0f;
+                mat.color = color;
+                
+                // Enable transparent mode nếu cần
+                mat.SetFloat("_Surface", 1); // Transparent
+                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
+                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
+                mat.SetInt("_ZWrite", 0);
+                mat.DisableKeyword("_ALPHATEST_ON");
+                mat.EnableKeyword("_ALPHABLEND_ON");
+                mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
+                mat.renderQueue = 3000;
+            }
+        }
+        
+        // FADE IN - Cube từ từ xuất hiện
+        float elapsed = 0f;
+        while (elapsed < cubeRevealDuration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(0f, 1f, elapsed / cubeRevealDuration);
+            
+            foreach (Renderer rend in renderers)
+            {
+                foreach (Material mat in rend.materials)
+                {
+                    Color color = mat.color;
+                    color.a = alpha;
+                    mat.color = color;
+                }
+            }
+            
+            yield return null;
+        }
+        
+        // Đảm bảo alpha = 1
+        foreach (Renderer rend in renderers)
+        {
+            foreach (Material mat in rend.materials)
+            {
+                Color color = mat.color;
+                color.a = 1f;
+                mat.color = color;
+            }
+        }
+        
+        // HIỂN THỊ CUBE trong 2 giây
+        yield return new WaitForSeconds(cubeDisplayTime);
+        
+        // FADE OUT - Cube từ từ biến mất
+        elapsed = 0f;
+        while (elapsed < cubeFadeOutDuration)
+        {
+            elapsed += Time.deltaTime;
+            float alpha = Mathf.Lerp(1f, 0f, elapsed / cubeFadeOutDuration);
+            
+            foreach (Renderer rend in renderers)
+            {
+                foreach (Material mat in rend.materials)
+                {
+                    Color color = mat.color;
+                    color.a = alpha;
+                    mat.color = color;
+                }
+            }
+            
+            yield return null;
+        }
+        
+        // Ẩn cube
+        fakerCube.SetActive(false);
     }
     
     private void LoadGameScene()
