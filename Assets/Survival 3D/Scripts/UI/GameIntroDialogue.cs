@@ -29,9 +29,9 @@ public class GameIntroDialogue : MonoBehaviour
     private string[] dialogues = new string[]
     {
         "Feaker: WTF, Đây là ở đâu ?",
-        "Anti Fan: Hỏi làm cái *** gì ?",
-        "Anti Fan: Mày chỉ cần biết m thắng 6 đội hạng \"2\" kia",
-        "Anti Fan: Thì mày được về nhà, haha see yaaaaa!"
+        "Anti Fan: Hỏi làm cái *** gì ? Mày chỉ cần biết",
+        "Anti Fan: Cứ theo mũi tên rồ là mày phải thắng 6 đội hạng  \"2\" kia",
+        "Anti Fan: Tiêu diệt tất cả thì mày được về nhà, haha see yaaaaa!"
     };
     
     private void Start()

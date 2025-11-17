@@ -58,6 +58,9 @@ public class VictoryManager : MonoBehaviour
     
     private void Start()
     {
+        // ⚠️ QUAN TRỌNG: Đảm bảo không trigger ngay khi vào game
+        victoryTriggered = false;
+        
         // Ẩn tất cả UI ban đầu
         if (videoCanvasGroup != null)
         {
@@ -75,11 +78,15 @@ public class VictoryManager : MonoBehaviour
             thankYouCanvas.SetActive(false);
         }
         
-        // Setup video
+        // Setup video - QUAN TRỌNG: Tắt play on awake
         if (victoryVideoPlayer != null)
         {
+            victoryVideoPlayer.Stop(); // Dừng nếu đang phát
+            victoryVideoPlayer.playOnAwake = false; // Đảm bảo không tự phát
             victoryVideoPlayer.loopPointReached += OnVictoryVideoFinished;
         }
+        
+        Debug.Log("✅ VictoryManager initialized - Video KHÔNG phát tự động");
     }
     
     public void TriggerVictory()

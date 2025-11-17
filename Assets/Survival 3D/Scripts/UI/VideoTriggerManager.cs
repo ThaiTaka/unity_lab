@@ -45,6 +45,9 @@ public class VideoTriggerManager : MonoBehaviour
         // Tìm StarCollectionSystem
         starSystem = FindObjectOfType<StarCollectionSystem>();
         
+        // ⚠️ Reset flag để đảm bảo không trigger nhầm
+        videoTriggered = false;
+        
         // Ẩn video và dialogue ban đầu
         if (videoCanvasGroup != null)
         {
@@ -57,11 +60,15 @@ public class VideoTriggerManager : MonoBehaviour
             antiDialogueCanvas.SetActive(false);
         }
         
-        // Setup VideoPlayer
+        // Setup VideoPlayer - QUAN TRỌNG: Tắt play on awake
         if (videoPlayer != null)
         {
+            videoPlayer.Stop(); // Dừng nếu đang phát
+            videoPlayer.playOnAwake = false; // Không tự phát
             videoPlayer.loopPointReached += OnVideoFinished;
         }
+        
+        Debug.Log($"✅ VideoTriggerManager initialized - Current stars: {(starSystem != null ? starSystem.GetCurrentStars() : 0)}/6");
     }
     
     private void Update()
