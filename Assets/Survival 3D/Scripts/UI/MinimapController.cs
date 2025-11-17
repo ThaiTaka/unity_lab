@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class MinimapController : MonoBehaviour
 {
@@ -23,11 +24,8 @@ public class MinimapController : MonoBehaviour
     public float minZoom = 10f;
     public float maxZoom = 50f;
     public float zoomSpeed = 5f;
-    public KeyCode zoomInKey = KeyCode.KeypadPlus;
-    public KeyCode zoomOutKey = KeyCode.KeypadMinus;
     
     [Header("Toggle")]
-    public KeyCode toggleMinimapKey = KeyCode.M;
     public GameObject minimapUI; // UI Panel chứa minimap
     
     private void Start()
@@ -60,8 +58,10 @@ public class MinimapController : MonoBehaviour
         if (player == null || minimapCamera == null)
             return;
         
-        // Toggle minimap
-        if (Input.GetKeyDown(toggleMinimapKey))
+        var keyboard = Keyboard.current;
+        
+        // Toggle minimap với phím M
+        if (keyboard != null && keyboard.mKey.wasPressedThisFrame)
         {
             ToggleMinimap();
         }
@@ -85,14 +85,14 @@ public class MinimapController : MonoBehaviour
             );
         }
         
-        // Zoom controls
-        if (enableZoomControl)
+        // Zoom controls với phím + và -
+        if (enableZoomControl && keyboard != null)
         {
-            if (Input.GetKey(zoomInKey))
+            if (keyboard.equalsKey.isPressed) // + key
             {
                 zoomLevel -= zoomSpeed * Time.deltaTime;
             }
-            if (Input.GetKey(zoomOutKey))
+            if (keyboard.minusKey.isPressed) // - key
             {
                 zoomLevel += zoomSpeed * Time.deltaTime;
             }

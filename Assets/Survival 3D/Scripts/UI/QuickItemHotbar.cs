@@ -2,13 +2,13 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.InputSystem;
 
 public class QuickItemHotbar : MonoBehaviour
 {
     [System.Serializable]
     public class HotbarSlot
     {
-        public KeyCode keyCode; // Phím để dùng item (1,2,3,4...)
         public ItemDatabase assignedItem; // Item được gán vào slot
         public Image iconImage; // Icon UI
         public TMPro.TextMeshProUGUI countText; // Số lượng
@@ -45,14 +45,15 @@ public class QuickItemHotbar : MonoBehaviour
     
     void Update()
     {
-        // Kiểm tra input cho mỗi hotbar slot
-        for (int i = 0; i < hotbarSlots.Length; i++)
-        {
-            if (Input.GetKeyDown(hotbarSlots[i].keyCode))
-            {
-                UseHotbarItem(i);
-            }
-        }
+        // Kiểm tra input cho mỗi hotbar slot (phím 1-5)
+        var keyboard = Keyboard.current;
+        if (keyboard == null) return;
+        
+        if (keyboard.digit1Key.wasPressedThisFrame) UseHotbarItem(0);
+        if (keyboard.digit2Key.wasPressedThisFrame) UseHotbarItem(1);
+        if (keyboard.digit3Key.wasPressedThisFrame) UseHotbarItem(2);
+        if (keyboard.digit4Key.wasPressedThisFrame) UseHotbarItem(3);
+        if (keyboard.digit5Key.wasPressedThisFrame) UseHotbarItem(4);
     }
     
     public void AssignItemToSlot(int slotIndex, ItemDatabase item)

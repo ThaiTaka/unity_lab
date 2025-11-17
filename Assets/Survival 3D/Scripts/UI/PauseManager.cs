@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.InputSystem;
 
 public class PauseManager : MonoBehaviour
 {
@@ -10,9 +11,6 @@ public class PauseManager : MonoBehaviour
     [Header("UI")]
     public GameObject pauseMenuUI; // Panel pause menu
     public GameObject settingsMenuUI; // Panel settings (optional)
-    
-    [Header("Settings")]
-    public KeyCode pauseKey = KeyCode.Escape;
     
     private bool isPaused = false;
     
@@ -41,7 +39,8 @@ public class PauseManager : MonoBehaviour
     void Update()
     {
         // Nhấn ESC để pause/resume
-        if (Input.GetKeyDown(pauseKey))
+        var keyboard = Keyboard.current;
+        if (keyboard != null && keyboard.escapeKey.wasPressedThisFrame)
         {
             if (isPaused)
                 Resume();
