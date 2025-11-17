@@ -68,7 +68,7 @@ public class StarCollectionSystem : MonoBehaviour
         // Setup font và alignment cho text - Sang xịn hơn
         if (starCountText != null)
         {
-            starCountText.fontSize = 30;
+            starCountText.fontSize = 27;
             starCountText.fontStyle = TMPro.FontStyles.Bold;
             starCountText.alignment = TMPro.TextAlignmentOptions.Center;
             starCountText.color = Color.white;
