@@ -15,9 +15,9 @@ public class StarCollectionSystem : MonoBehaviour
     
     [Header("UI References")]
     public TextMeshProUGUI starCountText; // Text hiển thị số sao (VD: "⭐ 3/6")
-    public Transform starIconContainer; // Container chứa các star icons trên UI
-    public GameObject starIconPrefab; // Prefab của 1 star icon UI
-    public GameObject victoryPanel; // Panel hiển thị khi thắng
+    public Transform starIconContainer; // Container chứa các star icons trên UI (OPTIONAL - có thể bỏ trống)
+    public GameObject starIconPrefab; // Prefab của 1 star icon UI (OPTIONAL - có thể bỏ trống)
+    public GameObject victoryPanel; // Panel hiển thị khi thắng (OPTIONAL - có thể bỏ trống)
     
     [Header("Star Visual (Optional)")]
     public GameObject starPrefab; // Prefab ngôi sao rơi từ zombie
@@ -191,7 +191,7 @@ public class StarCollectionSystem : MonoBehaviour
     
     private void OnAllStarsCollected()
     {
-        Debug.Log($"🎉 ALL STARS COLLECTED! Victory!");
+        Debug.Log($"🎉 ĐỦ 6 SAO! Dừng spawn zombie!");
         
         // Play victory sound
         if (victorySound != null && audioSource != null)
@@ -199,20 +199,31 @@ public class StarCollectionSystem : MonoBehaviour
             audioSource.PlayOneShot(victorySound);
         }
         
-        // Animate all stars
-        StartCoroutine(VictoryStarAnimation());
-        
-        // Show victory panel after animation
-        StartCoroutine(ShowVictoryPanelDelayed(1.5f));
-        
-        // Stop wave spawning
+        // STOP ZOMBIE SPAWNING - ĐÂY LÀ CHỨC NĂNG CHÍNH
         if (WaveManager.instance != null)
         {
             WaveManager.instance.StopAllWaves();
+            Debug.Log("✅ Đã dừng spawn zombie!");
         }
         
-        // Optional: Pause game or show celebration
-        // Time.timeScale = 0f; // Pause game
+        // OPTIONAL: Animate stars nếu có setup
+        if (starIcons.Count > 0)
+        {
+            StartCoroutine(VictoryStarAnimation());
+        }
+        
+        // OPTIONAL: Show victory panel nếu có setup
+        if (victoryPanel != null)
+        {
+            StartCoroutine(ShowVictoryPanelDelayed(1.5f));
+        }
+        
+        // ======================================
+        // 🔥 THÊM SỰ KIỆN CỦA BẠN Ở ĐÂY:
+        // ======================================
+        // Ví dụ: Spawn boss, load level mới, unlock item, etc.
+        // BossManager.instance.SpawnBoss();
+        // SceneManager.LoadScene("NextLevel");
     }
     
     private IEnumerator ShowVictoryPanelDelayed(float delay)
