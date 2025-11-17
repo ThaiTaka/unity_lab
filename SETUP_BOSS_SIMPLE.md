@@ -16,6 +16,7 @@
 4. [Setup Meteor & Skill](#4-setup-meteor--skill)
 5. [Setup Victory (Thắng boss)](#5-setup-victory)
 6. [Test & Debug](#6-test--debug)
+7. [🎮 CHEAT CODES (Developer Only)](#7-cheat-codes-developer-only)
 
 ---
 
@@ -444,6 +445,42 @@ Phase Settings:
 ### ❌ Meteor không rơi
 **Nguyên nhân:** Prefab chưa gán vào boss  
 **Sửa:** Double-click boss prefab → Gán Meteor Prefab
+
+---
+
+## 7. CHEAT CODES (DEVELOPER ONLY)
+
+### 🎮 Hệ Thống Cheat Bí Mật
+
+**Cách sử dụng:**
+1. Trong game, bấm **ENTER**
+2. Khung nhập code xuất hiện góc trái dưới
+3. Gõ mã cheat + bấm ENTER lần nữa
+4. Cheat kích hoạt! (Bấm lại để TẮT)
+
+### Danh Sách Cheat Codes:
+
+| Mã | Chức Năng | Áp Dụng Boss? |
+|-----|-----------|---------------|
+| `+cheath` | **God Mode** - Bất tử (máu luôn đầy) | ✅ Có |
+| `+cheatf` | **Infinite Hunger** - Luôn no (đói luôn đầy) | ✅ Có |
+| `+cheatd` | **One Hit Kill** - Zombie chết 1 phát | ❌ KHÔNG (Boss vẫn 3 lần) |
+
+### Setup Nhanh:
+
+**Xem hướng dẫn chi tiết:** [SETUP_CHEAT_CODES.md](./SETUP_CHEAT_CODES.md)
+
+**TL;DR:**
+1. Tạo Canvas → Panel (góc trái dưới)
+2. Thêm Input Field + Feedback Text
+3. Create Empty → Add CheatCodeManager script
+4. Gắn UI + PlayerNeeds vào script
+5. Play → Bấm Enter → Gõ `+cheath` → Bất tử!
+
+**Lưu ý:** 
+- Người chơi bình thường không biết → Chơi như bình thường
+- Developer biết mã → Test game nhanh hơn
+- Boss Anti T1 KHÔNG chết 1 hit (cân bằng gameplay)
 
 ---
 

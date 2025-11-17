@@ -267,8 +267,21 @@ public class NPC : MonoBehaviour, IDamagable
     
     public void TakePhysicDamage(int damageAmount)
     {
-        health -= damageAmount;
-       
+        // Kiểm tra cheat One Hit Kill (không áp dụng cho Boss Anti T1)
+        CheatCodeManager cheatManager = FindObjectOfType<CheatCodeManager>();
+        bool isBoss = gameObject.GetComponent<BossAntiT1>() != null;
+        
+        if (cheatManager != null && cheatManager.IsOneHitKillActive() && !isBoss)
+        {
+            // One hit kill - zombie chết ngay lập tức
+            health = 0;
+            Debug.Log($"⚔️ ONE HIT KILL: {gameObject.name} killed instantly!");
+        }
+        else
+        {
+            // Damage bình thường
+            health -= damageAmount;
+        }
 
         if (health <= 0)
             Die();
