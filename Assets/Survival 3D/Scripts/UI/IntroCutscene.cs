@@ -77,6 +77,7 @@ public class IntroCutscene : MonoBehaviour
         {
             dialogueText.text = "";
             dialogueText.color = Color.white;
+            dialogueText.fontSize = 27; // Font size mặc định
         }
         
         if (eyeOverlay != null)
@@ -170,6 +171,7 @@ public class IntroCutscene : MonoBehaviour
                 dialogueText.color = Color.white;
                 dialogueText.fontStyle = FontStyles.Normal; // Reset bôi đậm
                 dialogueText.outlineWidth = 0.2f; // Viền mỏng ban đầu
+                dialogueText.fontSize = 27; // Font size bình thường
             }
             
             yield return StartCoroutine(TypeText(dialogues[i], typingSpeed));
@@ -219,13 +221,16 @@ public class IntroCutscene : MonoBehaviour
             // Kiểm tra nếu đã gõ đến "DÀNH" trong câu cuối
             if (dialogueText.text.Contains("DÀNH"))
             {
-                // Đổi màu text thành đen + bôi đậm + thêm viền
+                // Đổi màu text thành đen + bôi đậm + thêm viền DÀY
                 dialogueText.color = Color.black;
                 dialogueText.fontStyle = FontStyles.Bold; // Bôi đậm
                 
-                // Thêm viền trắng để nổi bật trên ảnh
+                // Thêm viền trắng DÀY HƠN để nổi bật trên ảnh
                 dialogueText.outlineColor = Color.white;
-                dialogueText.outlineWidth = 0.3f; // Độ dày viền
+                dialogueText.outlineWidth = 0.8f; // Viền dày hơn (0.3 → 0.8)
+                
+                // Thêm font size lớn hơn để dễ đọc
+                dialogueText.fontSize = 35; // Tăng từ 27 lên 35
             }
             
             yield return new WaitForSeconds(speed);
@@ -304,6 +309,7 @@ public class IntroCutscene : MonoBehaviour
             dialogueText.color = Color.white;
             dialogueText.fontStyle = FontStyles.Normal;
             dialogueText.outlineWidth = 0.2f;
+            dialogueText.fontSize = 27; // Font size bình thường
         }
         
         string lastDialogue = dialogues[dialogues.Length - 1];
