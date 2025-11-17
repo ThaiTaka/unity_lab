@@ -12,7 +12,8 @@ public class Menu : MonoBehaviour
     public void OnNewGameButton()
     {
         FadeScreenCanvas.GetComponent<Canvas>().sortingOrder = 2;
-        SceneManager.LoadScene("Game");
+        // Load Intro cutscene thay vì load trực tiếp Game scene
+        SceneManager.LoadScene("IntroCutscene");
         FadeScreenStarting.GetComponent<Animation>().Play("sleep_anim");
         
         
