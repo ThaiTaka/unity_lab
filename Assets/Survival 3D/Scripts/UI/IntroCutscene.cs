@@ -17,11 +17,10 @@ public class IntroCutscene : MonoBehaviour
     public Image eyeOverlay; // Image cho hiệu ứng mở mắt
     public CanvasGroup canvasGroup;
     
-    [Header("Faker Cube Reveal")]
-    public GameObject fakerCube; // Cube Faker (Absolute Chyssey)
-    public float cubeRevealDuration = 1.0f; // Thời gian fade in cube
-    public float cubeDisplayTime = 2.0f; // Thời gian hiển thị cube
-    public float cubeFadeOutDuration = 0.8f; // Thời gian fade out cube
+    [Header("Faker Image Reveal")]
+    public Image fakerImage; // Image Faker (thay vì cube)
+    public float fakerFadeInDuration = 5.0f; // Thời gian fade in ảnh Faker
+    public float fakerFadeOutDuration = 2.0f; // Thời gian fade về đen
     
     [Header("Settings")]
     public float typingSpeed = 0.05f; // Tốc độ gõ chữ
@@ -44,11 +43,11 @@ public class IntroCutscene : MonoBehaviour
     // Các đoạn dialogue
     private string[] dialogues = new string[]
     {
-        "Anti: Lại vô địch đấy, tê liệt cũng chỉ ăn may à ?",
-        "Anti: Lúc nào cũng 3Ker, 3 Gà thì chửi ỏm lên",
-        "Giờ kêu đánh lại 6 trận lấy cúp đố lấy được đấy",
+        "Anti Fan: Lại vô địch đấy, tê liệt cũng chỉ ăn may à ?",
+        "Anti Fan: Lúc nào cũng 3Ker, 3 Gà thì chửi ỏm lên",
+        "Anti Fan: Giờ kêu đánh lại 6 trận lấy cúp đố lấy được đấy",
         "Feaker: Thế giờ 6 cúp sau ......",
-        "Feaker: SẼ ..... DÀNH ...... CHO ...... CHÚNG ....... EM"
+        "Feaker: SẼ ... DÀNH .... CHO .... Các .... EM"
     };
     
     private void Start()
@@ -70,10 +69,13 @@ public class IntroCutscene : MonoBehaviour
             eyeOverlay.color = new Color(0, 0, 0, 0); // Trong suốt ban đầu
         }
         
-        // Ẩn cube Faker ban đầu
-        if (fakerCube != null)
+        // Ẩn ảnh Faker ban đầu
+        if (fakerImage != null)
         {
-            fakerCube.SetActive(false);
+            Color color = fakerImage.color;
+            color.a = 0f; // Trong suốt
+            fakerImage.color = color;
+            fakerImage.gameObject.SetActive(false);
         }
         
         // Bắt đầu cutscene
@@ -114,13 +116,10 @@ public class IntroCutscene : MonoBehaviour
         // Đợi 1 giây trước khi bắt đầu
         yield return new WaitForSeconds(1f);
         
-        // Hiển thị từng dòng dialogue
-        for (int i = 0; i < dialogues.Length; i++)
+        // Hiển thị từng dòng dialogue (trừ dòng cuối)
+        for (int i = 0; i < dialogues.Length - 1; i++)
         {
-            // Dòng cuối cùng (Faker: SẼ...) dùng typing chậm hơn
-            float currentTypingSpeed = (i == dialogues.Length - 1) ? slowTypingSpeed : typingSpeed;
-            
-            yield return StartCoroutine(TypeText(dialogues[i], currentTypingSpeed));
+            yield return StartCoroutine(TypeText(dialogues[i], typingSpeed));
             
             // Đợi trước khi chuyển sang dòng tiếp theo
             yield return new WaitForSeconds(delayBetweenLines);
@@ -132,16 +131,16 @@ public class IntroCutscene : MonoBehaviour
             }
         }
         
-        // Đợi 1 giây sau dialogue cuối
-        yield return new WaitForSeconds(1f);
+        // DÒNG CUỐI CÙNG: Type text VÀ Fade in ảnh Faker ĐỒNG THỜI
+        yield return StartCoroutine(TypeTextWithFakerReveal());
         
-        // Hiệu ứng chớp mắt và mở mắt
+        // Fade về đen
+        yield return StartCoroutine(FadeFakerToBlack());
+        
+        // Hiệu ứng chớp mắt liên tục
         yield return StartCoroutine(EyeOpenEffect());
         
-        // HIỂN THỊ CUBE FAKER sau khi mở mắt
-        yield return StartCoroutine(ShowFakerCube());
-        
-        // Load game scene
+        // Chuyển scene NGAY LẬP TỨC sau khi mở mắt
         LoadGameScene();
     }
     
@@ -224,42 +223,75 @@ public class IntroCutscene : MonoBehaviour
         eyeOverlay.color = color;
     }
     
-    private IEnumerator ShowFakerCube()
+    private IEnumerator TypeTextWithFakerReveal()
     {
-        if (fakerCube == null) yield break;
+        // Dòng cuối cùng
+        string lastDialogue = dialogues[dialogues.Length - 1];
         
-        // Ẩn màn hình đen và text để chỉ thấy cube
-        if (blackScreen != null)
+        // Bắt đầu type text
+        Coroutine typingCoroutine = StartCoroutine(TypeText(lastDialogue, slowTypingSpeed));
+        
+        // ĐỒNG THỜI: Fade in ảnh Faker
+        if (fakerImage != null)
         {
-            blackScreen.gameObject.SetActive(false);
+            fakerImage.gameObject.SetActive(true);
+            
+            float elapsed = 0f;
+            Color color = fakerImage.color;
+            
+            // Fade in trong 5 giây
+            while (elapsed < fakerFadeInDuration)
+            {
+                elapsed += Time.deltaTime;
+                color.a = Mathf.Lerp(0f, 1f, elapsed / fakerFadeInDuration);
+                fakerImage.color = color;
+                yield return null;
+            }
+            
+            // Đảm bảo alpha = 1
+            color.a = 1f;
+            fakerImage.color = color;
         }
+        
+        // Đợi typing xong
+        yield return typingCoroutine;
+        
+        // Giữ ảnh Faker một chút
+        yield return new WaitForSeconds(1f);
+    }
+    
+    private IEnumerator FadeFakerToBlack()
+    {
+        if (fakerImage == null) yield break;
+        
+        // Clear text
         if (dialogueText != null)
         {
-            dialogueText.gameObject.SetActive(false);
+            dialogueText.text = "";
         }
         
-        // Kích hoạt cube với alpha = 1 NGAY LẬP TỨC (đã hiện sẵn khi mở mắt)
-        fakerCube.SetActive(true);
+        // Fade ảnh Faker về đen
+        float elapsed = 0f;
+        Color color = fakerImage.color;
         
-        // Lấy tất cả Renderer của cube và children
-        Renderer[] renderers = fakerCube.GetComponentsInChildren<Renderer>();
-        
-        // Set alpha = 1 ngay (cube đã hiện rõ 100%)
-        foreach (Renderer rend in renderers)
+        while (elapsed < fakerFadeOutDuration)
         {
-            foreach (Material mat in rend.materials)
-            {
-                Color color = mat.color;
-                color.a = 1f; // HIỆN NGAY, KHÔNG FADE
-                mat.color = color;
-            }
+            elapsed += Time.deltaTime;
+            color.a = Mathf.Lerp(1f, 0f, elapsed / fakerFadeOutDuration);
+            fakerImage.color = color;
+            yield return null;
         }
         
-        // HIỂN THỊ CUBE trong 2 giây
-        yield return new WaitForSeconds(cubeDisplayTime);
+        // Ẩn ảnh
+        color.a = 0f;
+        fakerImage.color = color;
+        fakerImage.gameObject.SetActive(false);
         
-        // KHÔNG FADE OUT - Giữ nguyên cube và chuyển scene luôn
-        // Cube sẽ vẫn hiển thị khi chuyển sang Game scene
+        // Hiện lại màn hình đen
+        if (blackScreen != null)
+        {
+            blackScreen.gameObject.SetActive(true);
+        }
     }
     
     private void LoadGameScene()
