@@ -250,46 +250,16 @@ public class IntroCutscene : MonoBehaviour
             foreach (Material mat in rend.materials)
             {
                 Color color = mat.color;
-                color.a = 1f; // HIỆN NGAY, KHÔNG FADE IN
+                color.a = 1f; // HIỆN NGAY, KHÔNG FADE
                 mat.color = color;
-                
-                // Enable transparent mode để có thể fade out sau
-                mat.SetFloat("_Surface", 1); // Transparent
-                mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
-                mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);
-                mat.SetInt("_ZWrite", 0);
-                mat.DisableKeyword("_ALPHATEST_ON");
-                mat.EnableKeyword("_ALPHABLEND_ON");
-                mat.DisableKeyword("_ALPHAPREMULTIPLY_ON");
-                mat.renderQueue = 3000;
             }
         }
         
-        // HIỂN THỊ CUBE trong 2 giây (đã hiện rõ 100%)
+        // HIỂN THỊ CUBE trong 2 giây
         yield return new WaitForSeconds(cubeDisplayTime);
         
-        // FADE OUT - Cube từ từ biến mất
-        float elapsed = 0f;
-        while (elapsed < cubeFadeOutDuration)
-        {
-            elapsed += Time.deltaTime;
-            float alpha = Mathf.Lerp(1f, 0f, elapsed / cubeFadeOutDuration);
-            
-            foreach (Renderer rend in renderers)
-            {
-                foreach (Material mat in rend.materials)
-                {
-                    Color color = mat.color;
-                    color.a = alpha;
-                    mat.color = color;
-                }
-            }
-            
-            yield return null;
-        }
-        
-        // Ẩn cube
-        fakerCube.SetActive(false);
+        // KHÔNG FADE OUT - Giữ nguyên cube và chuyển scene luôn
+        // Cube sẽ vẫn hiển thị khi chuyển sang Game scene
     }
     
     private void LoadGameScene()
