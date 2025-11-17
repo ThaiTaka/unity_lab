@@ -16,6 +16,7 @@ public class IntroCutscene : MonoBehaviour
     public Image blackScreen;
     public Image eyeOverlay; // Image cho hiệu ứng mở mắt
     public CanvasGroup canvasGroup;
+    public Image textBackground; // Nền cho text để dễ đọc
     
     [Header("Faker Image Reveal")]
     public Image fakerImage; // Image Faker (thay vì cube)
@@ -83,6 +84,12 @@ public class IntroCutscene : MonoBehaviour
         if (eyeOverlay != null)
         {
             eyeOverlay.color = new Color(0, 0, 0, 0); // Trong suốt ban đầu
+        }
+        
+        // Setup text background
+        if (textBackground != null)
+        {
+            textBackground.gameObject.SetActive(false); // Ẩn ban đầu
         }
         
         // Ẩn ảnh Faker ban đầu
@@ -192,10 +199,7 @@ public class IntroCutscene : MonoBehaviour
         // Fade về đen
         yield return StartCoroutine(FadeFakerToBlack());
         
-        // Hiệu ứng chớp mắt liên tục
-        yield return StartCoroutine(EyeOpenEffect());
-        
-        // Chuyển scene NGAY LẬP TỨC sau khi mở mắt
+        // KHÔNG CÒN chớp mắt - Chuyển scene trực tiếp
         LoadGameScene();
     }
     
@@ -221,16 +225,24 @@ public class IntroCutscene : MonoBehaviour
             // Kiểm tra nếu đã gõ đến "DÀNH" trong câu cuối
             if (dialogueText.text.Contains("DÀNH"))
             {
-                // Đổi màu text thành đen + bôi đậm + thêm viền DÀY
-                dialogueText.color = Color.black;
+                // HIỆN NỀN TEXT khi bắt đầu gõ DÀNH
+                if (textBackground != null && !textBackground.gameObject.activeSelf)
+                {
+                    textBackground.gameObject.SetActive(true);
+                    // Nền đen semi-transparent (alpha 0.7 = 70% đen)
+                    textBackground.color = new Color(0, 0, 0, 0.7f);
+                }
+                
+                // Đổi màu text thành trắng để nổi bật trên nền đen
+                dialogueText.color = Color.white; // Đổi từ đen sang TRẮNG
                 dialogueText.fontStyle = FontStyles.Bold; // Bôi đậm
                 
-                // Thêm viền trắng DÀY HƠN để nổi bật trên ảnh
-                dialogueText.outlineColor = Color.white;
-                dialogueText.outlineWidth = 0.8f; // Viền dày hơn (0.3 → 0.8)
+                // Viền đen để tách biệt với background
+                dialogueText.outlineColor = Color.black;
+                dialogueText.outlineWidth = 0.5f;
                 
-                // Thêm font size lớn hơn để dễ đọc
-                dialogueText.fontSize = 35; // Tăng từ 27 lên 35
+                // Font size lớn hơn để dễ đọc
+                dialogueText.fontSize = 35;
             }
             
             yield return new WaitForSeconds(speed);
@@ -350,10 +362,15 @@ public class IntroCutscene : MonoBehaviour
     {
         if (fakerImage == null) yield break;
         
-        // Clear text
+        // Clear text và ẩn text background
         if (dialogueText != null)
         {
             dialogueText.text = "";
+        }
+        
+        if (textBackground != null)
+        {
+            textBackground.gameObject.SetActive(false);
         }
         
         // Fade ảnh Faker về đen
