@@ -193,19 +193,15 @@ public class StarCollectionSystem : MonoBehaviour
     {
         if (starCountText != null)
         {
-            // Format đẹp với icon và spacing
-            // Dùng các cách hiển thị khác nhau tùy font
-            string starIcon = "★"; // Unicode star character
+            // Dùng chữ "STARS" thay vì ký tự sao (vì font mặc định không support ★)
+            starCountText.text = $"STARS  {currentStars} / {maxStars}";
             
-            // Thử các format khác nhau:
-            // Option 1: Icon + số (đơn giản nhất)
-            starCountText.text = $"{starIcon} {currentStars} / {maxStars}";
+            // Nếu muốn thử ký tự sao (cần font hỗ trợ Unicode):
+            // starCountText.text = $"★ {currentStars} / {maxStars}";
             
-            // Option 2: Nếu không hiện sao, dùng text
-            // starCountText.text = $"STARS  {currentStars} / {maxStars}";
-            
-            // Option 3: Với color tags (nếu muốn)
-            // starCountText.text = $"<size=48>{starIcon}</size>  {currentStars} / {maxStars}";
+            // Hoặc dùng text khác:
+            // starCountText.text = $"Sao:  {currentStars} / {maxStars}";
+            // starCountText.text = $"COLLECTED  {currentStars} / {maxStars}";
             
             // Set màu trắng cho toàn bộ text
             starCountText.color = Color.white;
