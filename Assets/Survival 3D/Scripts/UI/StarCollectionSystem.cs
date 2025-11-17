@@ -184,8 +184,8 @@ public class StarCollectionSystem : MonoBehaviour
     {
         if (starCountText != null)
         {
-            // Display: "⭐ 3/6" với màu sắc
-            starCountText.text = $"<color=yellow>⭐</color> <color=white>{currentStars}</color>/<color=grey>{maxStars}</color>";
+            // Display: "★ 3/6" với màu sắc (dùng ★ thay vì emoji ⭐)
+            starCountText.text = $"<color=yellow>★</color> <color=white>{currentStars}</color>/<color=grey>{maxStars}</color>";
         }
     }
     
