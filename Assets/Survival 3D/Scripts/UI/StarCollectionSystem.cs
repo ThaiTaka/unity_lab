@@ -65,13 +65,23 @@ public class StarCollectionSystem : MonoBehaviour
             victoryPanel.SetActive(false);
         }
         
-        // Setup font và alignment cho text
+        // Setup font và alignment cho text - Sang xịn hơn
         if (starCountText != null)
         {
-            starCountText.fontSize = 40;
+            starCountText.fontSize = 30;
             starCountText.fontStyle = TMPro.FontStyles.Bold;
             starCountText.alignment = TMPro.TextAlignmentOptions.Center;
             starCountText.color = Color.white;
+            
+            // Thêm outline để text nổi bật và đẹp hơn
+            starCountText.outlineWidth = 0.2f;
+            starCountText.outlineColor = new Color(0, 0, 0, 0.5f); // Viền đen mờ
+            
+            // Letter spacing để text trông rộng rãi, sang trọng hơn
+            starCountText.characterSpacing = 2f;
+            
+            // Word spacing
+            starCountText.wordSpacing = 5f;
         }
         
         Debug.Log($"⭐ StarCollectionSystem initialized - Need {maxStars} stars to win!");
