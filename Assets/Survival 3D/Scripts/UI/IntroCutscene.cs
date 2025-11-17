@@ -24,8 +24,8 @@ public class IntroCutscene : MonoBehaviour
     
     [Header("Eye Effect")]
     public float eyeBlinkDuration = 0.3f; // Thời gian chớp mắt
-    public float eyeOpenDuration = 1.5f; // Thời gian mở mắt
-    public int blinkCount = 2; // Số lần chớp mắt
+    public float eyeOpenDuration = 2.0f; // Thời gian mở mắt
+    public int blinkCount = 4; // Số lần chớp mắt (nhiều hơn = như vừa tỉnh dậy)
     
     [Header("Scene")]
     public string gameSceneName = "Game"; // Tên scene game
@@ -149,30 +149,42 @@ public class IntroCutscene : MonoBehaviour
     {
         if (eyeOverlay == null) yield break;
         
-        // Chớp mắt nhiều lần (như vừa tỉnh dậy)
+        // Chớp mắt nhiều lần (như vừa tỉnh dậy, chưa quen ánh sáng)
         for (int i = 0; i < blinkCount; i++)
         {
-            // Mở mắt (fade in black)
-            yield return StartCoroutine(FadeEye(0, 1, eyeBlinkDuration * 0.5f));
+            // Tốc độ chớp nhanh dần (lần đầu chậm, sau nhanh hơn)
+            float blinkSpeed = eyeBlinkDuration * (1f - (i * 0.15f));
+            blinkSpeed = Mathf.Max(blinkSpeed, 0.1f); // Không quá nhanh
             
-            // Đợi một chút
-            yield return new WaitForSeconds(0.1f);
+            // Nhắm mắt (đen)
+            yield return StartCoroutine(FadeEye(0, 1, blinkSpeed * 0.4f));
             
-            // Nhắm mắt (fade out black)
-            yield return StartCoroutine(FadeEye(1, 0, eyeBlinkDuration * 0.5f));
+            // Giữ nhắm một chút (lần đầu lâu hơn)
+            float holdTime = 0.15f * (blinkCount - i) / blinkCount;
+            yield return new WaitForSeconds(holdTime);
             
-            // Đợi giữa các lần chớp
-            yield return new WaitForSeconds(0.2f);
+            // Mở mắt (trong suốt)
+            yield return StartCoroutine(FadeEye(1, 0, blinkSpeed * 0.6f));
+            
+            // Đợi giữa các lần chớp (càng về sau càng ngắn)
+            float delayTime = 0.3f * (blinkCount - i) / blinkCount;
+            yield return new WaitForSeconds(delayTime);
         }
         
-        // Mở mắt lần cuối và giữ mở
-        yield return StartCoroutine(FadeEye(0, 1, eyeOpenDuration * 0.3f));
+        // Đợi một chút sau khi chớp hết
+        yield return new WaitForSeconds(0.4f);
+        
+        // Nhắm mắt lần cuối (chuẩn bị mở hoàn toàn)
+        yield return StartCoroutine(FadeEye(0, 1, 0.2f));
         
         // Đợi một chút
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.2f);
         
-        // Từ từ mở mắt hoàn toàn (fade to transparent)
+        // MỞ MẮT HOÀN TOÀN - từ từ, như vừa tỉnh dậy thật sự
         yield return StartCoroutine(FadeEye(1, 0, eyeOpenDuration));
+        
+        // Đợi thêm một chút để người chơi thấy rõ
+        yield return new WaitForSeconds(0.3f);
     }
     
     private IEnumerator FadeEye(float startAlpha, float endAlpha, float duration)
