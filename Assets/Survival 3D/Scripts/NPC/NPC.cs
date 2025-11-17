@@ -101,7 +101,8 @@ public class NPC : MonoBehaviour, IDamagable
 
     void PassiveUpdate()
     {
-        if (aiState == AIState.Wandering && agent.remainingDistance < 0.1f)
+        // Kiểm tra agent có sẵn sàng và có path hợp lệ trước khi check remainingDistance
+        if (aiState == AIState.Wandering && agent != null && agent.isOnNavMesh && agent.hasPath && agent.remainingDistance < 0.1f)
         {
             SetState(AIState.Idle);
             Invoke("WanderToNewLocation",Random.Range(minWanderWaitTime,maxWanderWaitTime));
@@ -125,6 +126,9 @@ public class NPC : MonoBehaviour, IDamagable
 
     void AttackingUpdate()
     {
+        // Kiểm tra agent có sẵn sàng trước khi sử dụng
+        if (agent == null || !agent.isOnNavMesh) return;
+        
         if (playerDistance > attackDistance)
         {
             agent.isStopped = false;
@@ -148,7 +152,8 @@ public class NPC : MonoBehaviour, IDamagable
 
     void FleeingUpdate()
     {
-        if (playerDistance < safeDistance && agent.remainingDistance < 0.1f)
+        // Kiểm tra agent có sẵn sàng và có path hợp lệ trước khi check remainingDistance
+        if (agent != null && agent.isOnNavMesh && agent.hasPath && playerDistance < safeDistance && agent.remainingDistance < 0.1f)
         {
             agent.SetDestination(GetFleeLocation());
         }
@@ -161,6 +166,13 @@ public class NPC : MonoBehaviour, IDamagable
 
     void SetState(AIState newState)
     {
+        // Kiểm tra agent tồn tại và đã được đặt trên NavMesh
+        if (agent == null || !agent.isOnNavMesh)
+        {
+            Debug.LogWarning($"{gameObject.name}: NavMeshAgent not ready or not on NavMesh!");
+            return;
+        }
+        
         aiState = newState;
         switch (aiState)
         {
