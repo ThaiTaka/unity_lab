@@ -60,29 +60,26 @@ Màn hình Loading hiển thị giữa **IntroCutscene** và **Game Scene** vớ
 
 ---
 
-### 3.2. Loading Bar Container
-1. **Right-click LoadingCanvas** → **UI** → **Image**
-2. Đổi tên: `LoadingBarBG` (Background của thanh loading)
+### 3.2. Loading Bar (Dùng Slider - Đơn Giản)
+1. **Right-click LoadingCanvas** → **UI** → **Slider**
+2. Đổi tên: `LoadingBar`
 3. Inspector:
    - **Pos X**: 0, **Pos Y**: -200
    - **Width**: 800, **Height**: 40
-   - **Image**: Color = **Dark Gray (50, 50, 50, 255)**
+   - **Min Value**: 0
+   - **Max Value**: 1
+   - **Value**: 0 (bắt đầu từ 0%)
+   - **Interactable**: ❌ Unchecked (người chơi không tương tác)
 
-### 3.3. Loading Bar Fill (Thanh Đầy)
-1. **Right-click LoadingBarBG** → **UI** → **Image**
-2. Đổi tên: `LoadingBarFill`
-3. Inspector:
-   - **Anchor Preset**: Stretch All (Left=0, Top=0, Right=0, Bottom=0)
-   - **Image**:
-     - Color: **Green (0, 255, 0, 255)** hoặc **Cyan (0, 255, 255, 255)**
-     - **Image Type**: Filled
-     - **Fill Method**: Horizontal
-     - **Fill Origin**: Left
-     - **Fill Amount**: **0** (sẽ tự động tăng lên)
+**Tùy Chỉnh Màu Slider (Optional):**
+- Expand `LoadingBar` trong Hierarchy
+- Select `Background` → Color: Dark Gray (50, 50, 50)
+- Select `Fill` → Color: Green (0, 255, 0) hoặc Cyan (0, 255, 255)
+- Delete `Handle Slide Area` (không cần handle)
 
 ---
 
-### 3.4. Loading Text "Loading... 0%"
+### 3.3. Loading Text "Loading... 0%"
 1. **Right-click LoadingCanvas** → **UI** → **Text - TextMeshPro**
 2. Đổi tên: `LoadingText`
 3. Inspector:
@@ -96,7 +93,7 @@ Màn hình Loading hiển thị giữa **IntroCutscene** và **Game Scene** vớ
 
 ---
 
-### 3.5. Tip Text (Mẹo Chơi Game)
+### 3.4. Tip Text (Mẹo Chơi Game)
 1. **Right-click LoadingCanvas** → **UI** → **Text - TextMeshPro**
 2. Đổi tên: `TipText`
 3. Inspector:
@@ -120,7 +117,7 @@ Màn hình Loading hiển thị giữa **IntroCutscene** và **Game Scene** vớ
 Trong Inspector của `LoadingCanvas`:
 
 **UI References:**
-- **Loading Bar**: Kéo `LoadingBarFill` vào đây
+- **Loading Bar**: Kéo `LoadingBar` (Slider) vào đây
 - **Loading Text**: Kéo `LoadingText` vào đây
 - **Tip Text**: Kéo `TipText` vào đây
 - **Canvas Group**: Kéo `LoadingCanvas` (CanvasGroup component) vào đây
@@ -170,8 +167,8 @@ Trong Inspector của `LoadingCanvas`:
 ## 🎨 Tùy Chỉnh (Optional)
 
 ### 1. Đổi Màu Loading Bar
-- Select `LoadingBarFill`
-- Đổi **Color** thành:
+- Expand `LoadingBar` trong Hierarchy
+- Select `Fill` → Đổi **Color** thành:
   - **Blue**: (0, 150, 255)
   - **Purple**: (150, 0, 255)
   - **Gold**: (255, 215, 0)
@@ -204,8 +201,8 @@ void Update() {
 
 ### ❌ Loading Bar không tăng
 **Giải pháp:**
-- Kiểm tra `LoadingBarFill` → **Image Type = Filled**
-- Kiểm tra `Fill Amount` ban đầu = 0
+- Kiểm tra `LoadingBar` là **Slider** component
+- Kiểm tra **Value** ban đầu = 0, **Max Value** = 1
 
 ### ❌ Tips không đổi
 **Giải pháp:**

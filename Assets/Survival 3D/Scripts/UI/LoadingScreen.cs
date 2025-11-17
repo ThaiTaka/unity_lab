@@ -10,7 +10,7 @@ using TMPro;
 public class LoadingScreen : MonoBehaviour
 {
     [Header("UI References")]
-    public Image loadingBar; // Thanh loading (Fill Amount)
+    public Slider loadingBar; // Thanh loading (Slider thay vì Image)
     public TextMeshProUGUI loadingText; // Text "Loading..."
     public TextMeshProUGUI tipText; // Text hiển thị tips
     public CanvasGroup canvasGroup;
@@ -75,10 +75,10 @@ public class LoadingScreen : MonoBehaviour
             // Fake progress smooth (không nhảy cóc)
             fakeProgress = Mathf.MoveTowards(fakeProgress, realProgress, Time.deltaTime * 0.5f);
             
-            // Update loading bar
+            // Update loading bar (Slider value từ 0 đến 1)
             if (loadingBar != null)
             {
-                loadingBar.fillAmount = fakeProgress;
+                loadingBar.value = fakeProgress;
             }
             
             // Update loading text
@@ -109,7 +109,7 @@ public class LoadingScreen : MonoBehaviour
                 // Đảm bảo thanh loading đầy 100%
                 if (loadingBar != null)
                 {
-                    loadingBar.fillAmount = 1f;
+                    loadingBar.value = 1f;
                 }
                 if (loadingText != null)
                 {
