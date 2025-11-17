@@ -164,10 +164,12 @@ public class IntroCutscene : MonoBehaviour
         // Hiển thị từng dòng dialogue (trừ dòng cuối)
         for (int i = 0; i < dialogues.Length - 1; i++)
         {
-            // Đảm bảo text màu trắng cho các dòng bình thường
+            // Đảm bảo text màu trắng và reset style cho các dòng bình thường
             if (dialogueText != null)
             {
                 dialogueText.color = Color.white;
+                dialogueText.fontStyle = FontStyles.Normal; // Reset bôi đậm
+                dialogueText.outlineWidth = 0.2f; // Viền mỏng ban đầu
             }
             
             yield return StartCoroutine(TypeText(dialogues[i], typingSpeed));
@@ -214,11 +216,16 @@ public class IntroCutscene : MonoBehaviour
                 audioSource.PlayOneShot(typingSound, typingSoundVolume);
             }
             
-            // Kiểm tra nếu đã gõ đến "CHO" trong câu cuối
-            if (dialogueText.text.Contains("CHO"))
+            // Kiểm tra nếu đã gõ đến "DÀNH" trong câu cuối
+            if (dialogueText.text.Contains("DÀNH"))
             {
-                // Đổi màu text thành đen khi ảnh Faker đã hiện
+                // Đổi màu text thành đen + bôi đậm + thêm viền
                 dialogueText.color = Color.black;
+                dialogueText.fontStyle = FontStyles.Bold; // Bôi đậm
+                
+                // Thêm viền trắng để nổi bật trên ảnh
+                dialogueText.outlineColor = Color.white;
+                dialogueText.outlineWidth = 0.3f; // Độ dày viền
             }
             
             yield return new WaitForSeconds(speed);
@@ -291,10 +298,12 @@ public class IntroCutscene : MonoBehaviour
     
     private IEnumerator TypeTextWithFakerReveal()
     {
-        // Dòng cuối cùng - Bắt đầu với text màu trắng
+        // Dòng cuối cùng - Bắt đầu với text màu trắng, style bình thường
         if (dialogueText != null)
         {
             dialogueText.color = Color.white;
+            dialogueText.fontStyle = FontStyles.Normal;
+            dialogueText.outlineWidth = 0.2f;
         }
         
         string lastDialogue = dialogues[dialogues.Length - 1];
