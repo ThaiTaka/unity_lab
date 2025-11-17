@@ -55,7 +55,7 @@ public class NPC : MonoBehaviour, IDamagable
     
     [Header("Events")]
     // Death event for wave system - UnityEvent cho phép config trong Inspector
-    public UnityEngine.Events.UnityEvent onDeath;
+    public UnityEngine.Events.UnityEvent onDeath = new UnityEngine.Events.UnityEvent();
     
     //get components
 

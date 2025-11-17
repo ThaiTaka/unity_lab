@@ -55,6 +55,21 @@ public class WaveManager : MonoBehaviour
 
     private void Start()
     {
+        // Kiểm tra waves config
+        if (waves == null || waves.Length == 0)
+        {
+            Debug.LogError("❌ WaveManager ERROR: Waves array is empty! Please configure waves in Inspector.");
+            Debug.LogError("📋 SETUP GUIDE:\n" +
+                          "1. Select WaveManager object in Hierarchy\n" +
+                          "2. Inspector → Wave Settings → Waves: Size = 5\n" +
+                          "3. For each Wave[0-4]:\n" +
+                          "   - Wave Name: 'Wave 1', 'Wave 2', etc.\n" +
+                          "   - Zombie Prefab: Drag Enemy Zombie prefab\n" +
+                          "   - Spawn Position: Drag SpawnPoint object");
+            return;
+        }
+        
+        Debug.Log($"✅ WaveManager initialized with {waves.Length} waves");
         UpdateWaveUI();
         StartNextWave();
     }
@@ -77,26 +92,82 @@ public class WaveManager : MonoBehaviour
         // Play wave start sound
         PlaySound(waveStartSound);
         
-        // Spawn zombie
-        if (currentWave.zombiePrefab != null && currentWave.spawnPosition != null)
+        // Validate wave configuration
+        if (currentWave.zombiePrefab == null)
         {
-            currentZombie = Instantiate(
-                currentWave.zombiePrefab, 
-                currentWave.spawnPosition.position, 
-                currentWave.spawnPosition.rotation
-            );
-            
-            // Subscribe to zombie death
-            NPC zombieNPC = currentZombie.GetComponent<NPC>();
-            if (zombieNPC != null)
-            {
-                // Add listener for death - UnityEvent dùng AddListener thay vì +=
-                zombieNPC.onDeath.AddListener(OnZombieDeath);
-            }
+            Debug.LogError($"⚠️ Wave {currentWaveIndex + 1}: Zombie Prefab is missing! Assign prefab in Inspector.");
+            return;
+        }
+        
+        if (currentWave.spawnPosition == null)
+        {
+            Debug.LogError($"⚠️ Wave {currentWaveIndex + 1}: Spawn Position is missing! Assign SpawnPoint in Inspector.");
+            return;
+        }
+        
+        // Spawn zombie at SpawnPoint position
+        Vector3 spawnPos = currentWave.spawnPosition.position;
+        Quaternion spawnRot = currentWave.spawnPosition.rotation;
+        
+        Debug.Log($"🔍 Attempting to spawn zombie prefab: {currentWave.zombiePrefab.name}");
+        Debug.Log($"📍 Spawn position: {spawnPos}");
+        
+        currentZombie = Instantiate(currentWave.zombiePrefab, spawnPos, spawnRot);
+        
+        if (currentZombie == null)
+        {
+            Debug.LogError("❌ Failed to instantiate zombie!");
+            return;
+        }
+        
+        currentZombie.name = $"{currentWave.waveName}_Zombie"; // Rename for debugging
+        
+        // Force enable zombie and all children (in case prefab is disabled)
+        currentZombie.SetActive(true);
+        
+        int childCount = currentZombie.transform.childCount;
+        Debug.Log($"🔧 Zombie has {childCount} children. Enabling all...");
+        
+        foreach (Transform child in currentZombie.transform)
+        {
+            child.gameObject.SetActive(true);
+            Debug.Log($"  ✓ Enabled child: {child.name}");
+        }
+        
+        Debug.Log($"✅ Zombie spawned successfully!");
+        Debug.Log($"   - Name: {currentZombie.name}");
+        Debug.Log($"   - Position: {currentZombie.transform.position}");
+        Debug.Log($"   - Active: {currentZombie.activeSelf}");
+        Debug.Log($"   - Layer: {LayerMask.LayerToName(currentZombie.layer)}");
+        
+        // Check components
+        var renderer = currentZombie.GetComponentInChildren<Renderer>();
+        Debug.Log($"   - Has Renderer: {renderer != null}");
+        if (renderer != null)
+        {
+            Debug.Log($"   - Renderer enabled: {renderer.enabled}");
+            Debug.Log($"   - Material: {(renderer.material != null ? renderer.material.name : "NULL")}");
+        }
+        
+        var navAgent = currentZombie.GetComponent<UnityEngine.AI.NavMeshAgent>();
+        Debug.Log($"   - Has NavMeshAgent: {navAgent != null}");
+        if (navAgent != null)
+        {
+            Debug.Log($"   - NavAgent enabled: {navAgent.enabled}");
+        }
+        
+        // Subscribe to zombie death event
+        NPC zombieNPC = currentZombie.GetComponent<NPC>();
+        if (zombieNPC != null)
+        {
+            zombieNPC.onDeath.AddListener(OnZombieDeath);
+            Debug.Log($"📡 Subscribed to zombie death event");
+            Debug.Log($"   - NPC Health: {zombieNPC.health}");
+            Debug.Log($"   - NPC AI Type: {zombieNPC.aiType}");
         }
         else
         {
-            Debug.LogError($"⚠️ Wave {currentWaveIndex + 1}: Missing prefab or spawn position!");
+            Debug.LogError($"⚠️ Zombie prefab does NOT have NPC component! Wave system will not work!");
         }
 
         UpdateWaveUI();
@@ -107,6 +178,9 @@ public class WaveManager : MonoBehaviour
         if (!waveActive) return;
 
         Debug.Log($"✅ Zombie defeated! Wave {currentWaveIndex + 1} complete!");
+        
+        // Get zombie position before it's destroyed
+        Vector3 zombiePosition = currentZombie != null ? currentZombie.transform.position : Vector3.zero;
         
         waveActive = false;
         
@@ -119,9 +193,17 @@ public class WaveManager : MonoBehaviour
             Instantiate(waveCompleteEffect, currentZombie.transform.position, Quaternion.identity);
         }
         
-        // Tăng số sao
-        currentStars++;
-        AddStar();
+        // ADD STAR to StarCollectionSystem
+        if (StarCollectionSystem.instance != null)
+        {
+            StarCollectionSystem.instance.AddStar(zombiePosition);
+        }
+        else
+        {
+            // Fallback: Old star system
+            currentStars++;
+            AddStar();
+        }
         
         // Trigger event
         onWaveComplete?.Invoke(currentStars);
@@ -171,6 +253,15 @@ public class WaveManager : MonoBehaviour
     public bool IsWaveActive()
     {
         return waveActive && currentZombie != null;
+    }
+    
+    // Stop all waves (called when player wins)
+    public void StopAllWaves()
+    {
+        waveActive = false;
+        CancelInvoke("StartNextWave");
+        
+        Debug.Log($"🛑 All waves stopped - Player collected all stars!");
     }
     
     private void PlaySound(AudioClip clip)
