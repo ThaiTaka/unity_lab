@@ -5,20 +5,20 @@ using UnityEngine.SceneManagement;
 using TMPro;
 
 /// <summary>
-/// Màn hình loading với thanh progress bar và tips
+/// Loading screen riêng cho Game → Victory Video
 /// </summary>
-public class LoadingScreen : MonoBehaviour
+public class Loading1Screen : MonoBehaviour
 {
     [Header("UI References")]
-    public Slider loadingBar; // Thanh loading (Slider thay vì Image)
-    public TextMeshProUGUI loadingText; // Text "Loading..."
-    public TextMeshProUGUI tipText; // Text hiển thị tips
+    public Slider loadingBar;
+    public TextMeshProUGUI loadingText;
+    public TextMeshProUGUI tipText;
     public CanvasGroup canvasGroup;
     
     [Header("Settings")]
-    public string targetSceneName = "Game"; // Scene cần load
-    public float minLoadingTime = 2.0f; // Thời gian loading tối thiểu (để người chơi đọc tip)
-    public float tipChangeInterval = 3.0f; // Thời gian đổi tip
+    public string targetSceneName = "VictoryVideoScene"; // Mặc định load Victory Video
+    public float minLoadingTime = 2.0f;
+    public float tipChangeInterval = 3.0f;
     
     // Static để lưu scene đích từ code khác
     private static string nextSceneToLoad = "";
@@ -27,31 +27,35 @@ public class LoadingScreen : MonoBehaviour
     [TextArea(2, 5)]
     public string[] loadingTips = new string[]
     {
-        "💡 Thu thập tài nguyên để sinh tồn trong môi trường khắc nghiệt!",
-        "⚒️ Chế tạo công cụ và vũ khí để bảo vệ bản thân.",
-        "🔥 Hãy giữ ấm vào ban đêm bằng lửa trại.",
-        "🍎 Ăn uống đầy đủ để duy trì sức khỏe.",
-        "🌳 Khai thác cây cối bằng rìu để lấy gỗ.",
-        "🪨 Đập đá bằng búa để lấy khoáng sản.",
-        "🏠 Xây dựng nơi trú ẩn an toàn.",
-        "🗺️ Khám phá bản đồ để tìm tài nguyên quý hiếm!",
-        "⭐ Hoàn thành nhiệm vụ để nhận phần thưởng.",
-        "👾 Hãy cẩn thận với quái vật vào ban đêm!"
+        "🎉 Bạn đã hoàn thành nhiệm vụ thu thập sao!",
+        "👑 Chuẩn bị chiến đấu với Boss mạnh nhất!",
+        "⚔️ Boss sẽ xuất hiện sau cutscene...",
+        "💪 Hãy chuẩn bị vũ khí và vật phẩm tốt nhất!",
+        "🔥 Trận chiến khó khăn sắp bắt đầu!",
+        "⭐ Bạn đã chứng minh mình là chiến binh giỏi!",
+        "🎬 Thưởng thức cutscene chiến thắng của bạn!"
     };
     
     private void Start()
     {
+        Debug.Log("========================================");
+        Debug.Log("🔄 LOADING1 SCENE STARTED");
+        
         // Nếu có scene được set từ code, dùng nó
         if (!string.IsNullOrEmpty(nextSceneToLoad))
         {
             targetSceneName = nextSceneToLoad;
             nextSceneToLoad = ""; // Reset
-            Debug.Log($"📦 Loading scene from code: {targetSceneName}");
+            Debug.Log($"✅ Loading1 scene from CODE: {targetSceneName}");
         }
         else
         {
-            Debug.Log($"📦 Loading scene from Inspector: {targetSceneName}");
+            Debug.Log($"⚠️ Loading1 scene from INSPECTOR: {targetSceneName}");
+            Debug.LogWarning("⚠️ WARNING: nextSceneToLoad was empty! Using Inspector value!");
         }
+        
+        Debug.Log($"🎯 FINAL TARGET SCENE: {targetSceneName}");
+        Debug.Log("========================================");
         
         // Bắt đầu loading
         StartCoroutine(LoadSceneAsync());
@@ -59,13 +63,19 @@ public class LoadingScreen : MonoBehaviour
     
     /// <summary>
     /// Static method để load scene từ bất kỳ đâu
-    /// VD: LoadingScreen.LoadScene("VictoryVideoScene");
+    /// VD: Loading1Screen.LoadScene("VictoryVideoScene");
     /// </summary>
     public static void LoadScene(string sceneName)
     {
+        Debug.Log("========================================");
+        Debug.Log($"🎬 Loading1Screen.LoadScene() CALLED");
+        Debug.Log($"🎯 Target Scene: {sceneName}");
+        Debug.Log("========================================");
+        
         nextSceneToLoad = sceneName;
-        SceneManager.LoadScene("Loading"); // ⚠️ TÊN SCENE LOADING TRONG BUILD SETTINGS
-        Debug.Log($"🔄 Transitioning to {sceneName} via Loading screen");
+        SceneManager.LoadScene("loading 1"); // ⚠️ TÊN SCENE PHẢI KHỚP BUILD SETTINGS
+        
+        Debug.Log($"🔄 Loading 'loading 1' scene to transition to {sceneName}");
     }
     
     private IEnumerator LoadSceneAsync()
@@ -75,7 +85,7 @@ public class LoadingScreen : MonoBehaviour
         
         // Bắt đầu load scene async
         AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(targetSceneName);
-        asyncLoad.allowSceneActivation = false; // Không tự động chuyển scene
+        asyncLoad.allowSceneActivation = false;
         
         float startTime = Time.time;
         float currentTipTime = 0f;
@@ -87,71 +97,48 @@ public class LoadingScreen : MonoBehaviour
             tipText.text = loadingTips[0];
         }
         
-        // Fake loading progress để mượt mà hơn
         float fakeProgress = 0f;
         
         while (!asyncLoad.isDone)
         {
-            // Tính progress thực tế (Unity load từ 0 -> 0.9)
             float realProgress = Mathf.Clamp01(asyncLoad.progress / 0.9f);
-            
-            // Tính thời gian đã load
             float elapsedTime = Time.time - startTime;
             
-            // Fake progress smooth (không nhảy cóc)
             fakeProgress = Mathf.MoveTowards(fakeProgress, realProgress, Time.deltaTime * 0.5f);
             
-            // Update loading bar (Slider value từ 0 đến 1)
             if (loadingBar != null)
             {
                 loadingBar.value = fakeProgress;
             }
             
-            // Update loading text
             if (loadingText != null)
             {
-                int percent = Mathf.RoundToInt(fakeProgress * 100);
-                loadingText.text = $"Loading... {percent}%";
+                loadingText.text = $"Loading... {Mathf.RoundToInt(fakeProgress * 100)}%";
             }
             
-            // Đổi tip sau mỗi khoảng thời gian
+            // Đổi tip
             currentTipTime += Time.deltaTime;
-            if (currentTipTime >= tipChangeInterval && loadingTips.Length > 1)
+            if (currentTipTime >= tipChangeInterval && loadingTips.Length > 0)
             {
                 currentTipTime = 0f;
                 currentTipIndex = (currentTipIndex + 1) % loadingTips.Length;
-                
                 if (tipText != null)
                 {
                     tipText.text = loadingTips[currentTipIndex];
                 }
             }
             
-            // Chỉ chuyển scene khi:
-            // 1. Load xong (progress >= 0.9)
-            // 2. ĐÃ QUÁ thời gian loading tối thiểu
-            if (asyncLoad.progress >= 0.9f && elapsedTime >= minLoadingTime)
+            // Đợi đủ thời gian tối thiểu VÀ load xong
+            if (fakeProgress >= 0.99f && elapsedTime >= minLoadingTime)
             {
-                // Đảm bảo thanh loading đầy 100%
-                if (loadingBar != null)
-                {
-                    loadingBar.value = 1f;
-                }
-                if (loadingText != null)
-                {
-                    loadingText.text = "Loading... 100%";
-                }
-                
-                yield return new WaitForSeconds(0.3f); // Hiển thị 100% một chút
-                
-                // Fade out và chuyển scene
-                yield return StartCoroutine(FadeOut());
-                
-                asyncLoad.allowSceneActivation = true; // Cho phép chuyển scene
+                asyncLoad.allowSceneActivation = true;
             }
             
             yield return null;
         }
+        
+        // Fade out trước khi chuyển scene
+        yield return StartCoroutine(FadeOut());
     }
     
     private IEnumerator FadeIn()

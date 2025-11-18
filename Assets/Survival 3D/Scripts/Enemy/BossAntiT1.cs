@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 /// <summary>
@@ -271,15 +272,14 @@ public class BossAntiT1 : MonoBehaviour
         
         yield return new WaitForSeconds(2f);
         
-        // Trigger victory video
-        VictoryManager victoryManager = FindObjectOfType<VictoryManager>();
-        if (victoryManager != null)
-        {
-            victoryManager.TriggerVictory();
-        }
+        // 🎉 CHIẾN THẮNG! Load Victory Video Scene
+        Debug.Log("🎉 BOSS DEFEATED! Loading Victory Video...");
         
-        // Destroy boss
-        Destroy(gameObject, 3f);
+        // Load qua Loading1Screen (màn loading riêng cho victory)
+        Loading1Screen.LoadScene("VictoryVideoScene");
+        
+        // Hoặc load trực tiếp nếu muốn
+        // SceneManager.LoadScene("VictoryVideoScene");
     }
     
     private void Update()

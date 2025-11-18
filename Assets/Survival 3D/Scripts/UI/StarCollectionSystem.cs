@@ -1,8 +1,8 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using TMPro;
 
 public class StarCollectionSystem : MonoBehaviour
@@ -12,6 +12,8 @@ public class StarCollectionSystem : MonoBehaviour
     [Header("Star Settings")]
     public int maxStars = 6; // Số sao cần thu thập
     public int currentStars = 0; // Số sao hiện tại
+    
+    private bool victoryTriggered = false; // Chặn trigger nhiều lần
     
     [Header("UI References")]
     public TextMeshProUGUI starCountText; // Text hiển thị số sao (VD: "⭐ 3/6")
@@ -31,6 +33,10 @@ public class StarCollectionSystem : MonoBehaviour
     public AudioClip starCollectSound;
     public AudioClip victorySound;
     private AudioSource audioSource;
+    
+    [Header("Scene Transition")]
+    public string victoryVideoSceneName = "VictoryVideoScene"; // Scene video victory
+    public float delayBeforeTransition = 2f; // Delay trước khi chuyển scene
     
     private List<GameObject> starIcons = new List<GameObject>();
     
@@ -57,6 +63,10 @@ public class StarCollectionSystem : MonoBehaviour
     
     private void Start()
     {
+        // ⚠️ RESET STARS VỀ 0 MỖI KHI LOAD GAME SCENE
+        currentStars = 0;
+        victoryTriggered = false;
+        
         InitializeStarIcons();
         UpdateStarUI();
         
@@ -85,6 +95,7 @@ public class StarCollectionSystem : MonoBehaviour
         }
         
         Debug.Log($"⭐ StarCollectionSystem initialized - Need {maxStars} stars to win!");
+        Debug.Log($"⭐ Current stars reset to: {currentStars}/{maxStars}");
     }
     
     // Khởi tạo các star icons trống
@@ -155,8 +166,9 @@ public class StarCollectionSystem : MonoBehaviour
         UpdateStarUI();
         
         // Check victory condition
-        if (currentStars >= maxStars)
+        if (currentStars >= maxStars && !victoryTriggered)
         {
+            victoryTriggered = true; // Chặn trigger nhiều lần
             OnAllStarsCollected();
         }
     }
@@ -220,7 +232,10 @@ public class StarCollectionSystem : MonoBehaviour
     
     private void OnAllStarsCollected()
     {
-        Debug.Log($"🎉 ĐỦ 6 SAO! Dừng spawn zombie!");
+        Debug.Log("========================================");
+        Debug.Log("🎉 ĐỦ 6 SAO! VICTORY TRIGGERED!");
+        Debug.Log($"⚠️ Victory triggered flag: {victoryTriggered}");
+        Debug.Log("========================================");
         
         // Play victory sound
         if (victorySound != null && audioSource != null)
@@ -228,31 +243,37 @@ public class StarCollectionSystem : MonoBehaviour
             audioSource.PlayOneShot(victorySound);
         }
         
-        // STOP ZOMBIE SPAWNING - ĐÂY LÀ CHỨC NĂNG CHÍNH
+        // STOP ZOMBIE SPAWNING
         if (WaveManager.instance != null)
         {
             WaveManager.instance.StopAllWaves();
             Debug.Log("✅ Đã dừng spawn zombie!");
         }
         
-        // OPTIONAL: Animate stars nếu có setup
+        // Animate stars nếu có setup
         if (starIcons.Count > 0)
         {
             StartCoroutine(VictoryStarAnimation());
         }
         
-        // OPTIONAL: Show victory panel nếu có setup
-        if (victoryPanel != null)
-        {
-            StartCoroutine(ShowVictoryPanelDelayed(1.5f));
-        }
+        // 🎬 CHUYỂN SANG LOADING SCENE → VICTORY VIDEO
+        StartCoroutine(TransitionToVictoryVideo());
+    }
+    
+    private IEnumerator TransitionToVictoryVideo()
+    {
+        Debug.Log($"⏳ Waiting {delayBeforeTransition}s before transition...");
         
-        // ======================================
-        // 🔥 THÊM SỰ KIỆN CỦA BẠN Ở ĐÂY:
-        // ======================================
-        // Ví dụ: Spawn boss, load level mới, unlock item, etc.
-        // BossManager.instance.SpawnBoss();
-        // SceneManager.LoadScene("NextLevel");
+        // Đợi animation và sound effect
+        yield return new WaitForSeconds(delayBeforeTransition);
+        
+        Debug.Log($"========================================");
+        Debug.Log($"🎯 STAR COLLECTION COMPLETE!");
+        Debug.Log($"🔄 Calling Loading1Screen.LoadScene('{victoryVideoSceneName}')");
+        Debug.Log($"========================================");
+        
+        // Load qua Loading1Screen (màn loading riêng cho Game → Victory)
+        Loading1Screen.LoadScene(victoryVideoSceneName);
     }
     
     private IEnumerator ShowVictoryPanelDelayed(float delay)

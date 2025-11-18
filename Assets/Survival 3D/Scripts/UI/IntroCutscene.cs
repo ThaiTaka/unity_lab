@@ -54,7 +54,7 @@ public class IntroCutscene : MonoBehaviour
         "Anti Fan: Lại vô địch đấy, tê liệt cũng chỉ ăn may à ?",
         "Anti Fan: Lúc nào cũng 3Ker, 3 Gà thì chửi ỏm lên",
         "Anti Fan: Giờ kêu đánh lại 6 trận lấy cúp đố lấy được đấy",
-        "Feaker: Thế giờ 6 cúp sau ......",
+        "Feaker: Chú em làm như anh ăn hên mà có cúp thế giới hả?",
         "Feaker: SẼ ...... DÀNH ....... CHO ...... Các ...... EM"
     };
     

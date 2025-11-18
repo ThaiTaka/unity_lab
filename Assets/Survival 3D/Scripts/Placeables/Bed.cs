@@ -22,7 +22,17 @@ public class Bed : Buildings, IInteractable
     
     private void Start()
     {
-        FadeScreen2 = FindObjectOfType<RawImage>(true);
+        // Tìm RawImage có tên "FadeScreen" hoặc tag cụ thể, KHÔNG PHẢI VideoDisplay!
+        GameObject fadeObj = GameObject.Find("FadeScreen");
+        if (fadeObj != null)
+        {
+            FadeScreen2 = fadeObj.GetComponent<RawImage>();
+        }
+        
+        if (FadeScreen2 == null)
+        {
+            Debug.LogWarning("⚠️ Bed: FadeScreen not found! Sleep animation won't work.");
+        }
     }
 
    
@@ -31,7 +41,18 @@ public class Bed : Buildings, IInteractable
     {
         if (CanSleep())
         {
-            FadeScreen2.GetComponent<Animation>().Play("sleep_anim");
+            if (FadeScreen2 != null)
+            {
+                Animation anim = FadeScreen2.GetComponent<Animation>();
+                if (anim != null)
+                {
+                    anim.Play("sleep_anim");
+                }
+                else
+                {
+                    Debug.LogWarning("⚠️ FadeScreen doesn't have Animation component!");
+                }
+            }
 
             PolyverseSkies.instance.gameObject.SetActive(false);
             

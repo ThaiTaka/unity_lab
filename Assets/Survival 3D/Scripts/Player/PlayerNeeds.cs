@@ -24,6 +24,10 @@ public class PlayerNeeds : MonoBehaviour,IDamagable
     public UnityEvent onTakeDamage;
 
     public static PlayerNeeds instance;
+    
+    // Properties để CheatCodeManager truy cập được
+    public float maxHealth => health.maxValue;
+    public float maxHunger => hunger.maxValue;
 
     //singleton
     void Awake()

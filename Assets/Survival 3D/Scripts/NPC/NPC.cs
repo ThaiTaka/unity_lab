@@ -72,8 +72,27 @@ public class NPC : MonoBehaviour, IDamagable
 
     private void Start()
     {
-        SetState(AIState.Wandering);
+        // Đợi NavMeshAgent sẵn sàng trước khi wandering
+        StartCoroutine(InitializeAI());
+    }
+    
+    private IEnumerator InitializeAI()
+    {
+        // Đợi 1 frame để NavMeshAgent được đặt trên NavMesh
+        yield return new WaitForEndOfFrame();
         
+        // Kiểm tra NavMeshAgent đã sẵn sàng
+        if (agent != null && agent.isOnNavMesh)
+        {
+            SetState(AIState.Wandering);
+            // Bắt đầu wandering ngay lập tức
+            WanderToNewLocation();
+            Debug.Log($"🧟 {gameObject.name} initialized - Starting to wander");
+        }
+        else
+        {
+            Debug.LogWarning($"❌ {gameObject.name}: NavMeshAgent not on NavMesh! Check placement.");
+        }
     }
 
    
@@ -211,30 +230,57 @@ public class NPC : MonoBehaviour, IDamagable
     {
         // if npc is not in idle state dont call for new destination
         if (aiState != AIState.Idle)
+        {
+            Debug.Log($"⚠️ {gameObject.name}: Can't wander, not in Idle state (current: {aiState})");
             return;
+        }
+        
+        if (agent == null || !agent.isOnNavMesh)
+        {
+            Debug.LogError($"❌ {gameObject.name}: Agent not ready! agent={agent}, isOnNavMesh={agent?.isOnNavMesh}");
+            return;
+        }
         
         SetState(AIState.Wandering);
-        agent.SetDestination(GetWanderLocation());
+        Vector3 destination = GetWanderLocation();
+        agent.SetDestination(destination);
+        
+        Debug.Log($"🚶 {gameObject.name}: Started wandering to {destination}");
     }
 
     Vector3 GetWanderLocation()
     {
         NavMeshHit hit;
-        NavMesh.SamplePosition(transform.position +
-                               (Random.onUnitSphere * Random.Range(minWanderDistance, maxWanderDistance)),out hit, maxWanderDistance,NavMesh.AllAreas);
-
-        int i = 0;
-
-        while (Vector3.Distance(transform.position, hit.position) < detectDistance)
+        
+        // Tìm vị trí ngẫu nhiên quanh NPC
+        Vector3 randomDirection = Random.onUnitSphere * Random.Range(minWanderDistance, maxWanderDistance);
+        randomDirection += transform.position;
+        
+        // Sample vị trí trên NavMesh
+        bool found = NavMesh.SamplePosition(randomDirection, out hit, maxWanderDistance, NavMesh.AllAreas);
+        
+        if (!found)
         {
-            NavMesh.SamplePosition(transform.position +
-                                   (Random.onUnitSphere * Random.Range(minWanderDistance, maxWanderDistance)),out hit, maxWanderDistance,NavMesh.AllAreas);
-            i++;
-            if (i == 30)
-                break;
+            Debug.LogWarning($"⚠️ {gameObject.name}: No valid NavMesh position found nearby! Using current position.");
+            return transform.position;
         }
 
-        //dont allow npc  to walk near player
+        int i = 0;
+        // Đảm bảo không đi quá gần player
+        while (Vector3.Distance(transform.position, hit.position) < detectDistance)
+        {
+            randomDirection = Random.onUnitSphere * Random.Range(minWanderDistance, maxWanderDistance);
+            randomDirection += transform.position;
+            NavMesh.SamplePosition(randomDirection, out hit, maxWanderDistance, NavMesh.AllAreas);
+            i++;
+            if (i == 30)
+            {
+                Debug.LogWarning($"⚠️ {gameObject.name}: Couldn't find wander position away from player after 30 tries!");
+                break;
+            }
+        }
+
+        Debug.Log($"🎯 {gameObject.name}: Wandering to {hit.position} (distance: {Vector3.Distance(transform.position, hit.position):F1}m)");
         return hit.position;
     }
 
@@ -268,10 +314,9 @@ public class NPC : MonoBehaviour, IDamagable
     public void TakePhysicDamage(int damageAmount)
     {
         // Kiểm tra cheat One Hit Kill (không áp dụng cho Boss Anti T1)
-        CheatCodeManager cheatManager = FindObjectOfType<CheatCodeManager>();
         bool isBoss = gameObject.GetComponent<BossAntiT1>() != null;
         
-        if (cheatManager != null && cheatManager.IsOneHitKillActive() && !isBoss)
+        if (CheatCodeManager.IsOneHitKillActive() && !isBoss)
         {
             // One hit kill - zombie chết ngay lập tức
             health = 0;
@@ -303,6 +348,7 @@ public class NPC : MonoBehaviour, IDamagable
         anim.SetTrigger("Die");
         
         // Trigger death event for wave system
+        // WaveManager sẽ handle việc add star, không cần gọi ở đây!
         onDeath?.Invoke();
         
         Destroy(gameObject,this.GetComponentInChildren<Animator>().GetCurrentAnimatorStateInfo(0).length+delay);
